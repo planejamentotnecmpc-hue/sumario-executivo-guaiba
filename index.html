@@ -322,8 +322,12 @@ buildDonutInputs('diGestion','gestion');
 buildDonutInputs('diNaturaleza','naturaleza');
 
 // ========== BAR COLORS WITH HIGHLIGHT ==========
-function barColors(base,highlight,n){
- return Array(n).fill(0).map(function(_,i){return i===mesAtivo?highlight:base});
+function barColors(base,n){return Array(n).fill(base)}
+function barBorders(color,width,n){
+ return Array(n).fill(0).map(function(_,i){return i===mesAtivo?color:'transparent'});
+}
+function barBorderW(w,n){
+ return Array(n).fill(0).map(function(_,i){return i===mesAtivo?w:0});
 }
 
 // ========== CREATE CHARTS ==========
@@ -335,7 +339,7 @@ function createCharts(){
  // Histograma
  charts.hist=new Chart(document.getElementById('chartHist'),{
   type:'bar',
-  data:{labels:MESES,datasets:[{label:'Efetivo Total',data:dataHist.slice(),backgroundColor:barColors('#2e7d32','#ffc107',12),borderRadius:2}]},
+  data:{labels:MESES,datasets:[{label:'Efetivo Total',data:dataHist.slice(),backgroundColor:barColors('#2e7d32',12),borderColor:barBorders('#333',2,12),borderWidth:barBorderW(2.5,12),borderRadius:2}]},
   options:{responsive:true,animation:{duration:300},plugins:{legend:{display:true,position:'bottom',labels:{font:{size:10},usePointStyle:true,pointStyle:'circle'}},datalabels:dlOpts},scales:{y:{beginAtZero:true,grid:{color:'#eee'},ticks:{font:{size:9}}},x:{grid:{display:false},ticks:{font:{size:9,weight:'bold'}}}}}
  });
 
@@ -343,10 +347,10 @@ function createCharts(){
  charts.hht=new Chart(document.getElementById('chartHht'),{
   type:'bar',
   data:{labels:MESES,datasets:[
-   {label:'Hht (mil)',data:dataHht.slice(),backgroundColor:barColors('#2e7d32','#ffc107',12),borderRadius:2,order:2,yAxisID:'y',
+   {label:'Hht (mil)',data:dataHht.slice(),backgroundColor:barColors('#2e7d32',12),borderColor:barBorders('#333',2,12),borderWidth:barBorderW(2.5,12),borderRadius:2,order:2,yAxisID:'y',
     datalabels:{display:true,anchor:'end',align:'top',color:'#333',font:{size:9,weight:'bold'},formatter:function(v){return v>0?v:''}}},
    {label:'Hht (mil) AC',data:calcAcum(dataHht),type:'line',borderColor:'#1b5e20',backgroundColor:'transparent',
-    pointRadius:5,pointBackgroundColor:function(ctx){return ctx.dataIndex===mesAtivo?'#ffc107':'#8bc34a'},
+    pointRadius:function(ctx){return ctx.dataIndex===mesAtivo?7:5},pointBackgroundColor:'#8bc34a',
     pointBorderColor:'#1b5e20',pointBorderWidth:2,borderWidth:2,order:1,yAxisID:'y1',
     datalabels:{display:true,anchor:'end',align:'top',color:'#2e7d32',font:{size:9,weight:'bold'},
      formatter:function(v){return v>0?v:''}}}
@@ -381,14 +385,14 @@ function createCharts(){
  charts.fisico=new Chart(document.getElementById('chartFisico'),{
   type:'bar',
   data:{labels:MESES,datasets:[
-   {label:'Previsto',data:fp,backgroundColor:barColors('#1b5e20','#ffc107',12),borderRadius:1,order:4,barPercentage:0.7,categoryPercentage:0.8,
+   {label:'Previsto',data:fp,backgroundColor:barColors('#1b5e20',12),borderColor:barBorders('#333',2,12),borderWidth:barBorderW(2.5,12),borderRadius:1,order:4,barPercentage:0.7,categoryPercentage:0.8,
     datalabels:dlOff},
-   {label:'Real',data:fr,backgroundColor:barColors('#66bb6a','#ffe082',12),borderRadius:1,order:4,barPercentage:0.7,categoryPercentage:0.8,
+   {label:'Real',data:fr,backgroundColor:barColors('#66bb6a',12),borderColor:barBorders('#333',2,12),borderWidth:barBorderW(2.5,12),borderRadius:1,order:4,barPercentage:0.7,categoryPercentage:0.8,
     datalabels:dlOff},
    {label:'LB 0',data:fl,type:'line',borderColor:'#9e9e9e',pointRadius:2,pointBackgroundColor:'#9e9e9e',borderWidth:1.5,borderDash:[5,3],order:1,fill:false,datalabels:dlOff},
-   {label:'Previsto Ac',data:fpAc,type:'line',borderColor:'#8bc34a',pointRadius:3,pointBackgroundColor:function(ctx){return ctx.dataIndex===mesAtivo?'#ffc107':'#8bc34a'},pointBorderColor:'#8bc34a',borderWidth:2,order:2,fill:false,datalabels:dlOff},
-   {label:'Real Ac',data:frAc,type:'line',borderColor:'#1b5e20',pointRadius:4,
-    pointBackgroundColor:function(ctx){return ctx.dataIndex===mesAtivo?'#ffc107':'#1b5e20'},
+   {label:'Previsto Ac',data:fpAc,type:'line',borderColor:'#8bc34a',pointRadius:function(ctx){return ctx.dataIndex===mesAtivo?5:3},pointBackgroundColor:'#8bc34a',pointBorderColor:'#8bc34a',borderWidth:2,order:2,fill:false,datalabels:dlOff},
+   {label:'Real Ac',data:frAc,type:'line',borderColor:'#1b5e20',pointRadius:function(ctx){return ctx.dataIndex===mesAtivo?7:4},
+    pointBackgroundColor:'#1b5e20',
     pointBorderColor:'#1b5e20',pointBorderWidth:2,borderWidth:3,order:1,fill:false,datalabels:dlOff}
   ]},
   options:{responsive:true,animation:{duration:300},
@@ -402,14 +406,14 @@ function createCharts(){
  charts.financeiro=new Chart(document.getElementById('chartFinanceiro'),{
   type:'line',
   data:{labels:MESES,datasets:[
-   {label:'Prev. Totalizado',data:fnP,borderColor:'#3949ab',pointRadius:3,
-    pointBackgroundColor:function(ctx){return ctx.dataIndex===mesAtivo?'#ffc107':'#3949ab'},
+   {label:'Prev. Totalizado',data:fnP,borderColor:'#3949ab',pointRadius:function(ctx){return ctx.dataIndex===mesAtivo?6:3},
+    pointBackgroundColor:'#3949ab',
     pointBorderColor:'#3949ab',borderWidth:2.5,fill:false,datalabels:dlOff},
-   {label:'Real + Previsto',data:fnRP,borderColor:'#9e9e9e',pointRadius:2,
-    pointBackgroundColor:function(ctx){return ctx.dataIndex===mesAtivo?'#ffc107':'#9e9e9e'},
+   {label:'Real + Previsto',data:fnRP,borderColor:'#9e9e9e',pointRadius:function(ctx){return ctx.dataIndex===mesAtivo?5:2},
+    pointBackgroundColor:'#9e9e9e',
     borderWidth:1.5,fill:false,datalabels:dlOff},
-   {label:'Real. Acum.',data:fnR,borderColor:'#1b5e20',pointRadius:4,
-    pointBackgroundColor:function(ctx){return ctx.dataIndex===mesAtivo?'#ffc107':'#1b5e20'},
+   {label:'Real. Acum.',data:fnR,borderColor:'#1b5e20',pointRadius:function(ctx){return ctx.dataIndex===mesAtivo?7:4},
+    pointBackgroundColor:'#1b5e20',
     pointBorderColor:'#1b5e20',pointBorderWidth:2,borderWidth:3,fill:false,datalabels:dlOff}
   ]},
   options:{responsive:true,animation:{duration:300},
@@ -484,12 +488,16 @@ function buildFinanceiroTable(){
 function updateAllCharts(){
  var h=readGrid('gridHist');
  charts.hist.data.datasets[0].data=h;
- charts.hist.data.datasets[0].backgroundColor=barColors('#2e7d32','#ffc107',12);
+ charts.hist.data.datasets[0].backgroundColor=barColors('#2e7d32',12);
+ charts.hist.data.datasets[0].borderColor=barBorders('#333',2,12);
+ charts.hist.data.datasets[0].borderWidth=barBorderW(2.5,12);
  charts.hist.update();
 
  var hht=readGrid('gridHht');
  charts.hht.data.datasets[0].data=hht;
- charts.hht.data.datasets[0].backgroundColor=barColors('#2e7d32','#ffc107',12);
+ charts.hht.data.datasets[0].backgroundColor=barColors('#2e7d32',12);
+ charts.hht.data.datasets[0].borderColor=barBorders('#333',2,12);
+ charts.hht.data.datasets[0].borderWidth=barBorderW(2.5,12);
  charts.hht.data.datasets[1].data=calcAcum(hht);
  charts.hht.update();
 
@@ -499,9 +507,13 @@ function updateAllCharts(){
 
  var fp=readGrid('gridFisPrev'),fr=readGrid('gridFisReal'),fl=readGrid('gridFisLB');
  charts.fisico.data.datasets[0].data=fp;
- charts.fisico.data.datasets[0].backgroundColor=barColors('#1b5e20','#ffc107',12);
+ charts.fisico.data.datasets[0].backgroundColor=barColors('#1b5e20',12);
+ charts.fisico.data.datasets[0].borderColor=barBorders('#333',2,12);
+ charts.fisico.data.datasets[0].borderWidth=barBorderW(2.5,12);
  charts.fisico.data.datasets[1].data=fr;
- charts.fisico.data.datasets[1].backgroundColor=barColors('#66bb6a','#ffe082',12);
+ charts.fisico.data.datasets[1].backgroundColor=barColors('#66bb6a',12);
+ charts.fisico.data.datasets[1].borderColor=barBorders('#333',2,12);
+ charts.fisico.data.datasets[1].borderWidth=barBorderW(2.5,12);
  charts.fisico.data.datasets[2].data=fl;
  charts.fisico.data.datasets[3].data=calcAcum(fp);
  charts.fisico.data.datasets[4].data=calcAcum(fr);
