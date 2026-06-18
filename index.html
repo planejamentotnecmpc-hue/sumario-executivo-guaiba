@@ -166,7 +166,7 @@ body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--bg);color:#333;pa
  <div class="mn-label">Previsto (% mensal)</div><div class="mn-grid" id="gridFisPrev"></div>
  <div class="mn-label">Real (% mensal)</div><div class="mn-grid" id="gridFisReal"></div>
  <div class="mn-label">Linha Base 0 (% acumulado)</div><div class="mn-grid" id="gridFisLB"></div>
- <div class="chart-box" style="margin-top:8px"><div class="chart-wrapper"><div class="desvio-box" id="desvioBox"><div class="val" id="desvioVal">-4,6%</div><div class="lbl">Desvio (%)</div></div><h4>Curva Geral</h4><canvas id="chartFisico" height="160"></canvas></div><table class="chart-data-tbl" id="tblFisico"></table></div>
+ <div class="chart-box" style="margin-top:8px"><div class="chart-wrapper"><div class="desvio-box" id="desvioBox"><div class="val" id="desvioVal">-4,6%</div><div class="lbl">Desvio (%)</div></div><h4>Curva Geral</h4><canvas id="chartFisico" height="200"></canvas></div><table class="chart-data-tbl" id="tblFisico"></table></div>
 </div></div>
 
 <!-- VISAO FINANCEIRA -->
@@ -175,7 +175,7 @@ body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--bg);color:#333;pa
  <div class="mn-label">Prev. Totalizado (MMUSD acum.)</div><div class="mn-grid" id="gridFinPrev"></div>
  <div class="mn-label">Real + Previsto (MMUSD acum.)</div><div class="mn-grid" id="gridFinRP"></div>
  <div class="mn-label">Real Acum. (MMUSD)</div><div class="mn-grid" id="gridFinReal"></div>
- <div class="chart-box" style="margin-top:8px"><div class="chart-wrapper"><div class="dez-annotation" id="dezAnnotation">Dezembro: USD MM 0.01</div><canvas id="chartFinanceiro" height="140"></canvas></div><table class="chart-data-tbl" id="tblFinanceiro"></table></div>
+ <div class="chart-box" style="margin-top:8px"><div class="chart-wrapper"><div class="dez-annotation" id="dezAnnotation">Dezembro: USD MM 0.01</div><canvas id="chartFinanceiro" height="200"></canvas></div><table class="chart-data-tbl" id="tblFinanceiro"></table></div>
 </div></div>
 
 <!-- PRINCIPAIS PROJETOS -->
@@ -254,9 +254,19 @@ function createCharts(){
  charts.hht=new Chart(document.getElementById('chartHht'),{type:'bar',data:{labels:MESES,datasets:[{label:'Hht (mil)',data:dataHht.slice(),backgroundColor:barColors('#2e7d32',12),borderColor:barBorders('#333',2,12),borderWidth:barBorderW(2.5,12),borderRadius:2,order:2,yAxisID:'y',datalabels:dlOn},{label:'Hht (mil) AC',data:calcAcum(dataHht),type:'line',borderColor:'#1b5e20',backgroundColor:'transparent',pointRadius:function(ctx){return ctx.dataIndex===mesAtivo?7:5},pointBackgroundColor:'#8bc34a',pointBorderColor:'#1b5e20',pointBorderWidth:2,borderWidth:2,order:1,yAxisID:'y1',datalabels:{display:true,anchor:'end',align:'top',color:'#2e7d32',font:{size:9,weight:'bold'},formatter:function(v){return v>0?v:''}}}]},options:{responsive:true,animation:{duration:300},plugins:{legend:{position:'bottom',labels:{font:{size:10},usePointStyle:true}}},scales:{y:{beginAtZero:true,position:'left',grid:{color:'#eee'},ticks:{font:{size:9}}},y1:{beginAtZero:true,position:'right',grid:{drawOnChartArea:false},ticks:{font:{size:9}}},x:{grid:{display:false},ticks:{font:{size:9,weight:'bold'}}}}}});
  ['status','origen','gestion','naturaleza'].forEach(function(k){var cid='chart'+k.charAt(0).toUpperCase()+k.slice(1);charts[k]=new Chart(document.getElementById(cid),{type:'doughnut',data:{labels:donutData[k].labels,datasets:[{data:donutData[k].values.slice(),backgroundColor:donutData[k].colors,borderWidth:1}]},options:{responsive:true,cutout:'60%',plugins:{legend:{position:'bottom',labels:{font:{size:9},usePointStyle:true,pointStyle:'circle',padding:8}},datalabels:{display:true,color:'#333',font:{size:9,weight:'bold'},formatter:function(v,ctx){return ctx.chart.data.labels[ctx.dataIndex]+' '+v}}}},plugins:[{id:'ct',beforeDraw:function(ch){var w=ch.width,h=ch.height,ctx=ch.ctx;var t=ch.data.datasets[0].data.reduce(function(a,b){return a+b},0);ctx.save();ctx.font='bold 24px Segoe UI';ctx.fillStyle='#333';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(t,w/2,h/2-10);ctx.restore()}}]})});
  var fp=readGrid('gridFisPrev'),fr=readGrid('gridFisReal'),fl=readGrid('gridFisLB');
- charts.fisico=new Chart(document.getElementById('chartFisico'),{type:'bar',data:{labels:MESES,datasets:[{label:'Previsto',data:fp,backgroundColor:barColors('#1b5e20',12),borderColor:barBorders('#333',2,12),borderWidth:barBorderW(2.5,12),borderRadius:1,order:4,barPercentage:0.7,categoryPercentage:0.8,datalabels:dlOff},{label:'Real',data:fr,backgroundColor:barColors('#66bb6a',12),borderColor:barBorders('#333',2,12),borderWidth:barBorderW(2.5,12),borderRadius:1,order:4,barPercentage:0.7,categoryPercentage:0.8,datalabels:dlOff},{label:'LB 0',data:fl,type:'line',borderColor:'#9e9e9e',pointRadius:2,pointBackgroundColor:'#9e9e9e',borderWidth:1.5,borderDash:[5,3],order:1,fill:false,datalabels:dlOff},{label:'Previsto Ac',data:calcAcum(fp),type:'line',borderColor:'#8bc34a',pointRadius:function(ctx){return ctx.dataIndex===mesAtivo?5:3},pointBackgroundColor:'#8bc34a',pointBorderColor:'#8bc34a',borderWidth:2,order:2,fill:false,datalabels:dlOff},{label:'Real Ac',data:calcAcum(fr),type:'line',borderColor:'#1b5e20',pointRadius:function(ctx){return ctx.dataIndex===mesAtivo?7:4},pointBackgroundColor:'#1b5e20',pointBorderColor:'#1b5e20',pointBorderWidth:2,borderWidth:3,order:1,fill:false,datalabels:dlOff}]},options:{responsive:true,animation:{duration:300},plugins:{legend:{position:'bottom',labels:{font:{size:10},usePointStyle:true,padding:10}},datalabels:{display:false}},scales:{y:{beginAtZero:true,max:100,grid:{color:'#eee'},ticks:{font:{size:9},stepSize:10,callback:function(v){return v.toFixed(0)+',00'}}},x:{grid:{display:false},ticks:{font:{size:10,weight:'bold'}}}}}});
+ charts.fisico=new Chart(document.getElementById('chartFisico'),{type:'bar',data:{labels:MESES,datasets:[
+  {label:'Previsto',data:fp,backgroundColor:barColors('#1b5e20',12),borderColor:barBorders('#333',2,12),borderWidth:barBorderW(2.5,12),borderRadius:1,order:4,barPercentage:0.6,categoryPercentage:0.7,datalabels:dlOff},
+  {label:'Real',data:fr,backgroundColor:barColors('#4caf50',12),borderColor:barBorders('#333',2,12),borderWidth:barBorderW(2.5,12),borderRadius:1,order:4,barPercentage:0.6,categoryPercentage:0.7,datalabels:dlOff},
+  {label:'LB 0',data:fl,type:'line',borderColor:'#9e9e9e',pointRadius:2,pointBackgroundColor:'#9e9e9e',borderWidth:1.5,borderDash:[5,3],tension:0.3,order:1,fill:false,datalabels:dlOff},
+  {label:'Previsto Ac',data:calcAcum(fp),type:'line',borderColor:'#8bc34a',pointRadius:function(ctx){return ctx.dataIndex===mesAtivo?6:3},pointBackgroundColor:'#8bc34a',borderWidth:2.5,tension:0.3,order:2,fill:false,datalabels:dlOff},
+  {label:'Real Ac',data:calcAcum(fr),type:'line',borderColor:'#1b5e20',pointRadius:function(ctx){return ctx.dataIndex===mesAtivo?7:4},pointBackgroundColor:'#1b5e20',pointBorderColor:'#fff',pointBorderWidth:2,borderWidth:3,tension:0.3,order:1,fill:false,datalabels:dlOff}
+ ]},options:{responsive:true,maintainAspectRatio:true,aspectRatio:2.2,animation:{duration:300},plugins:{legend:{position:'bottom',labels:{font:{size:10,family:'Calibri'},usePointStyle:true,padding:12}},datalabels:{display:false}},scales:{y:{beginAtZero:true,max:100,grid:{color:'#e8e8e8'},ticks:{font:{size:9},stepSize:10,callback:function(v){return v.toFixed(0)+',00'}}},x:{grid:{display:false},ticks:{font:{size:10,weight:'bold'}}}}}});
  var fnP=readGrid('gridFinPrev'),fnRP=readGrid('gridFinRP'),fnR=readGrid('gridFinReal');
- charts.financeiro=new Chart(document.getElementById('chartFinanceiro'),{type:'line',data:{labels:MESES,datasets:[{label:'Prev. Totalizado',data:fnP,borderColor:'#3949ab',pointRadius:function(ctx){return ctx.dataIndex===mesAtivo?6:3},pointBackgroundColor:'#3949ab',pointBorderColor:'#3949ab',borderWidth:2.5,fill:false,datalabels:dlOff},{label:'Real + Previsto',data:fnRP,borderColor:'#9e9e9e',pointRadius:function(ctx){return ctx.dataIndex===mesAtivo?5:2},pointBackgroundColor:'#9e9e9e',borderWidth:1.5,fill:false,datalabels:dlOff},{label:'Real. Acum.',data:fnR,borderColor:'#1b5e20',pointRadius:function(ctx){return ctx.dataIndex===mesAtivo?7:4},pointBackgroundColor:'#1b5e20',pointBorderColor:'#1b5e20',pointBorderWidth:2,borderWidth:3,fill:false,datalabels:dlOff}]},options:{responsive:true,animation:{duration:300},plugins:{legend:{position:'bottom',align:'start',labels:{font:{size:10},usePointStyle:true,padding:12}},datalabels:{display:false}},scales:{y:{beginAtZero:true,grid:{color:'#eee'},ticks:{font:{size:9},callback:function(v){return v.toFixed(2).replace('.',',')}}},x:{grid:{display:false},ticks:{font:{size:10,weight:'bold'}}}}}});
+ charts.financeiro=new Chart(document.getElementById('chartFinanceiro'),{type:'line',data:{labels:MESES,datasets:[
+  {label:'Prev. Totalizado',data:fnP,borderColor:'#3949ab',pointRadius:function(ctx){return ctx.dataIndex===mesAtivo?6:3},pointBackgroundColor:'#3949ab',pointBorderColor:'#fff',pointBorderWidth:1.5,borderWidth:2.5,tension:0.3,fill:false,datalabels:dlOff},
+  {label:'Real + Previsto',data:fnRP,borderColor:'#9e9e9e',pointRadius:function(ctx){return ctx.dataIndex===mesAtivo?5:2},pointBackgroundColor:'#9e9e9e',borderWidth:1.5,tension:0.3,fill:false,datalabels:dlOff},
+  {label:'Real. Acum.',data:fnR,borderColor:'#1b5e20',pointRadius:function(ctx){return ctx.dataIndex===mesAtivo?7:4},pointBackgroundColor:'#1b5e20',pointBorderColor:'#fff',pointBorderWidth:2,borderWidth:3,tension:0.3,fill:false,datalabels:dlOff}
+ ]},options:{responsive:true,maintainAspectRatio:true,aspectRatio:2.2,animation:{duration:300},plugins:{legend:{position:'bottom',align:'start',labels:{font:{size:10,family:'Calibri'},usePointStyle:true,padding:12}},datalabels:{display:false}},scales:{y:{beginAtZero:true,grid:{color:'#e8e8e8'},ticks:{font:{size:9},callback:function(v){return v.toFixed(2).replace('.',',')}}},x:{grid:{display:false},ticks:{font:{size:10,weight:'bold'}}}}}});
  buildDataTables();
 }
 function buildDataTables(){buildHhtTbl();buildFisicoTbl();buildFinTbl()}
@@ -267,7 +277,7 @@ function updateAllCharts(){
  var h=readGrid('gridHist');charts.hist.data.datasets[0].data=h;charts.hist.data.datasets[0].backgroundColor=barColors('#2e7d32',12);charts.hist.data.datasets[0].borderColor=barBorders('#333',2,12);charts.hist.data.datasets[0].borderWidth=barBorderW(2.5,12);charts.hist.update();
  var hht=readGrid('gridHht');charts.hht.data.datasets[0].data=hht;charts.hht.data.datasets[0].backgroundColor=barColors('#2e7d32',12);charts.hht.data.datasets[0].borderColor=barBorders('#333',2,12);charts.hht.data.datasets[0].borderWidth=barBorderW(2.5,12);charts.hht.data.datasets[1].data=calcAcum(hht);charts.hht.update();
  ['status','origen','gestion','naturaleza'].forEach(function(k){charts[k].data.datasets[0].data=donutData[k].values.slice();charts[k].update()});
- var fp=readGrid('gridFisPrev'),fr=readGrid('gridFisReal'),fl=readGrid('gridFisLB');charts.fisico.data.datasets[0].data=fp;charts.fisico.data.datasets[0].backgroundColor=barColors('#1b5e20',12);charts.fisico.data.datasets[0].borderColor=barBorders('#333',2,12);charts.fisico.data.datasets[0].borderWidth=barBorderW(2.5,12);charts.fisico.data.datasets[1].data=fr;charts.fisico.data.datasets[1].backgroundColor=barColors('#66bb6a',12);charts.fisico.data.datasets[1].borderColor=barBorders('#333',2,12);charts.fisico.data.datasets[1].borderWidth=barBorderW(2.5,12);charts.fisico.data.datasets[2].data=fl;charts.fisico.data.datasets[3].data=calcAcum(fp);charts.fisico.data.datasets[4].data=calcAcum(fr);charts.fisico.update();
+ var fp=readGrid('gridFisPrev'),fr=readGrid('gridFisReal'),fl=readGrid('gridFisLB');charts.fisico.data.datasets[0].data=fp;charts.fisico.data.datasets[0].backgroundColor=barColors('#1b5e20',12);charts.fisico.data.datasets[0].borderColor=barBorders('#333',2,12);charts.fisico.data.datasets[0].borderWidth=barBorderW(2.5,12);charts.fisico.data.datasets[1].data=fr;charts.fisico.data.datasets[1].backgroundColor=barColors('#4caf50',12);charts.fisico.data.datasets[1].borderColor=barBorders('#333',2,12);charts.fisico.data.datasets[1].borderWidth=barBorderW(2.5,12);charts.fisico.data.datasets[2].data=fl;charts.fisico.data.datasets[3].data=calcAcum(fp);charts.fisico.data.datasets[4].data=calcAcum(fr);charts.fisico.update();
  var a=readGrid('gridFinPrev'),b=readGrid('gridFinRP'),c=readGrid('gridFinReal');charts.financeiro.data.datasets[0].data=a;charts.financeiro.data.datasets[1].data=b;charts.financeiro.data.datasets[2].data=c;charts.financeiro.update();
  buildDataTables();
 }
@@ -401,8 +411,11 @@ async function gerarWord(){
   }
 
   // ===== Helper: chart image paragraph =====
-  function chartImagePara(canvasId,w,h){
+  function chartImagePara(canvasId,targetW){
    var cv=document.getElementById(canvasId);
+   var ratio=cv.height/cv.width;
+   var w=targetW||580;
+   var h=Math.round(w*ratio);
    var ab=canvasToAB(cv);
    return new D.Paragraph({
     children:[new D.ImageRun({data:ab,transformation:{width:w,height:h},type:'png'})],
@@ -412,7 +425,7 @@ async function gerarWord(){
   }
 
   // ===== Helper: combined donuts canvas =====
-  function donutsCombinedImage(w,h){
+  function donutsCombinedImage(targetW){
    var combinedCanvas=document.createElement('canvas');
    combinedCanvas.width=1600;combinedCanvas.height=450;
    var cctx=combinedCanvas.getContext('2d');
@@ -423,6 +436,7 @@ async function gerarWord(){
     cctx.drawImage(src,idx*400,0,400,450);
    });
    var ab=canvasToAB(combinedCanvas);
+   var w=targetW||580;var h=Math.round(w*(450/1600));
    return new D.Paragraph({
     children:[new D.ImageRun({data:ab,transformation:{width:w,height:h},type:'png'})],
     alignment:D.AlignmentType.CENTER,
@@ -590,12 +604,12 @@ async function gerarWord(){
   // Hht chart
   sec2Children.push(spacer(160));
   sec2Children.push(subtitlePara('Hht (x1000)'));
-  sec2Children.push(chartImagePara('chartHht',600,220));
+  sec2Children.push(chartImagePara('chartHht',580));
 
   // Histograma chart
   sec2Children.push(spacer(160));
   sec2Children.push(subtitlePara('Histograma - Efetivo Total'));
-  sec2Children.push(chartImagePara('chartHist',500,200));
+  sec2Children.push(chartImagePara('chartHist',580));
 
   // ===== SECTION 3: PORTFOLIO DE PROJETOS =====
   var sec3Children=[];
@@ -607,7 +621,7 @@ async function gerarWord(){
 
   // 4 donuts combined
   sec3Children.push(subtitlePara('Distribuicao do Portfolio'));
-  sec3Children.push(donutsCombinedImage(600,170));
+  sec3Children.push(donutsCombinedImage(580));
 
   // KPI indicators table from portfolio
   var kpiTblRows=document.querySelectorAll('#tblKpi tr');
@@ -643,7 +657,7 @@ async function gerarWord(){
   sec4Children.push(sectionTitle('4. Visao Fisica'));
   sec4Children.push(bodyPara(document.getElementById('fisico_texto').value));
   sec4Children.push(subtitlePara('Curva Geral - Avanco Fisico'));
-  sec4Children.push(chartImagePara('chartFisico',600,240));
+  sec4Children.push(chartImagePara('chartFisico',580));
 
   // Fisico data table
   var fp=readGrid('gridFisPrev'),fr=readGrid('gridFisReal'),fl=readGrid('gridFisLB'),fpa=calcAcum(fp),fra=calcAcum(fr);
@@ -676,7 +690,7 @@ async function gerarWord(){
   sec5Children.push(sectionTitle('5. Visao Financeira'));
   sec5Children.push(bodyPara(document.getElementById('financeiro_texto').value));
   sec5Children.push(subtitlePara('Curva Financeira - Desembolso (MMUSD)'));
-  sec5Children.push(chartImagePara('chartFinanceiro',600,220));
+  sec5Children.push(chartImagePara('chartFinanceiro',580));
 
   // Financeiro data table
   var fnP=readGrid('gridFinPrev'),fnRP=readGrid('gridFinRP'),fnR=readGrid('gridFinReal');
