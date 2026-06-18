@@ -425,18 +425,19 @@ async function gerarWord(){
   }
 
   // ===== Helper: combined donuts canvas =====
-  function donutsCombinedImage(targetW){
+  function donutsGrid(targetW){
    var combinedCanvas=document.createElement('canvas');
-   combinedCanvas.width=1600;combinedCanvas.height=450;
+   combinedCanvas.width=1000;combinedCanvas.height=900;
    var cctx=combinedCanvas.getContext('2d');
-   cctx.fillStyle='#ffffff';cctx.fillRect(0,0,1600,450);
+   cctx.fillStyle='#ffffff';cctx.fillRect(0,0,1000,900);
    var donutIds=['chartStatus','chartOrigen','chartGestion','chartNaturaleza'];
    donutIds.forEach(function(id,idx){
+    var col=idx%2,row=Math.floor(idx/2);
     var src=document.getElementById(id);
-    cctx.drawImage(src,idx*400,0,400,450);
+    cctx.drawImage(src,col*500,row*450,500,450);
    });
    var ab=canvasToAB(combinedCanvas);
-   var w=targetW||580;var h=Math.round(w*(450/1600));
+   var w=targetW||500;var h=Math.round(w*(900/1000));
    return new D.Paragraph({
     children:[new D.ImageRun({data:ab,transformation:{width:w,height:h},type:'png'})],
     alignment:D.AlignmentType.CENTER,
@@ -621,7 +622,7 @@ async function gerarWord(){
 
   // 4 donuts combined
   sec3Children.push(subtitlePara('Distribuicao do Portfolio'));
-  sec3Children.push(donutsCombinedImage(580));
+  sec3Children.push(donutsGrid(520));
 
   // KPI indicators table from portfolio
   var kpiTblRows=document.querySelectorAll('#tblKpi tr');
