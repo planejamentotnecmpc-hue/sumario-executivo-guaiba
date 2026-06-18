@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Editor - Sumario Executivo Guaiba</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 <script src="https://unpkg.com/docx@8.5.0/build/index.umd.js"></script>
 <script src="https://unpkg.com/file-saver@2.0.5/dist/FileSaver.min.js"></script>
 <style>
@@ -15,20 +16,16 @@ body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--bg);color:#333;pa
 .download-bar{position:sticky;top:0;background:#fff;padding:10px 0;border-bottom:2px solid var(--g);z-index:100;display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;flex-wrap:wrap;gap:8px}
 .download-bar select,.download-bar input{padding:5px 8px;border:1px solid var(--bd);border-radius:4px;font-size:13px}
 .btn-dl{background:var(--g);color:#fff;border:none;padding:10px 22px;border-radius:6px;font-size:15px;cursor:pointer;font-weight:bold}
-.btn-dl:hover{background:var(--gd)}
-.btn-dl:disabled{background:#999;cursor:wait}
+.btn-dl:hover{background:var(--gd)}.btn-dl:disabled{background:#999;cursor:wait}
 .sec{margin-bottom:20px;border:1px solid #e0e0e0;border-radius:6px;overflow:hidden}
 .sec-t{background:var(--g);color:#fff;padding:9px 14px;font-size:15px;font-weight:bold;cursor:pointer;user-select:none;display:flex;justify-content:space-between;align-items:center}
-.sec-t::after{content:'\25BC';font-size:11px}
-.sec-t.c::after{transform:rotate(-90deg)}
-.sec-b{padding:14px}
-.sec-b.h{display:none}
+.sec-t::after{content:'\25BC';font-size:11px}.sec-t.c::after{transform:rotate(-90deg)}
+.sec-b{padding:14px}.sec-b.h{display:none}
 .fg{margin-bottom:12px}
 .fg label{display:block;font-weight:600;margin-bottom:3px;color:#555;font-size:12px}
 .fg textarea{width:100%;padding:7px;border:1px solid var(--bd);border-radius:4px;font-size:12px;font-family:inherit;resize:vertical;min-height:50px;line-height:1.4}
 .fg input[type="text"],.fg input[type="number"]{padding:5px 7px;border:1px solid var(--bd);border-radius:4px;font-size:12px;width:100%}
-.fr{display:flex;gap:12px;flex-wrap:wrap}
-.fr .fg{flex:1;min-width:120px}
+.fr{display:flex;gap:12px;flex-wrap:wrap}.fr .fg{flex:1;min-width:120px}
 .dtbl{width:100%;border-collapse:collapse;font-size:11px;margin:8px 0}
 .dtbl th{background:var(--g);color:#fff;padding:5px 4px;text-align:center;font-size:10px;border:1px solid #004d2a}
 .dtbl td{padding:3px 4px;border:1px solid #ddd;text-align:center}
@@ -41,20 +38,19 @@ body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--bg);color:#333;pa
 .btn-r{background:#dc3545;color:#fff;border:none;padding:2px 7px;border-radius:3px;cursor:pointer;font-size:10px}
 .btn-r:hover{background:#a71d2a}
 .chart-row{display:flex;gap:15px;flex-wrap:wrap;margin:10px 0}
-.chart-box{flex:1;min-width:300px;border:1px solid #e0e0e0;border-radius:6px;padding:10px;background:#fafafa}
-.chart-box canvas{width:100%!important;max-height:280px}
-.chart-box h4{font-size:13px;color:var(--g);margin-bottom:6px;text-align:center}
+.chart-box{flex:1;min-width:300px;border:1px solid #ddd;border-radius:6px;padding:12px;background:#fff}
+.chart-box canvas{width:100%!important}
+.chart-box h4{font-size:14px;color:var(--g);margin-bottom:6px;text-align:center}
 .card-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:10px 0}
 .card{border:1px solid #e0e0e0;border-radius:6px;padding:12px;background:#fafafa}
 .card h4{font-size:13px;color:var(--g);margin-bottom:8px}
-.card .kpi{display:flex;justify-content:space-around;text-align:center;flex-wrap:wrap;gap:6px}
-.card .kpi-item{flex:1;min-width:80px;background:#fff;border-radius:6px;padding:8px 4px;border:1px solid #eee}
-.card .kpi-item .val{font-size:20px;font-weight:bold;color:#333}
-.card .kpi-item .lbl{font-size:9px;color:#888}
+.kpi-item{background:#fff;border-radius:6px;padding:8px 4px;border:1px solid #eee;text-align:center}
+.kpi-item .lbl{font-size:9px;color:#888}
 .mn-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:3px;margin:5px 0}
 .mn-grid label{font-size:9px;text-align:center;color:#888;font-weight:normal}
 .mn-grid input{width:100%;text-align:center;font-size:11px;padding:3px 1px;border:1px solid #ddd;border-radius:3px}
 .mn-grid input:focus{border-color:var(--g);outline:none}
+.mn-grid input.mes-ativo{border-color:var(--g);background:var(--gl);font-weight:bold}
 .mn-label{font-size:11px;font-weight:600;color:#555;margin:6px 0 2px}
 .photo-entry{border:1px solid #e0e0e0;border-radius:6px;padding:10px;margin-bottom:10px;background:#fafafa}
 .img-slot{border:2px dashed #ccc;border-radius:6px;padding:8px;text-align:center;min-height:80px;position:relative;background:#fff;margin-top:6px}
@@ -68,6 +64,19 @@ body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--bg);color:#333;pa
 .donut-inputs .di{display:flex;align-items:center;gap:3px;font-size:11px}
 .donut-inputs .di input{width:45px;text-align:center;padding:2px;border:1px solid #ddd;border-radius:3px;font-size:11px}
 .donut-inputs .di input:focus{border-color:var(--g);outline:none}
+/* Data table below charts - Excel style */
+.chart-data-tbl{width:100%;border-collapse:collapse;font-size:9px;margin-top:0;border-top:2px solid #888}
+.chart-data-tbl td{padding:2px 3px;text-align:center;border:1px solid #ddd;font-size:9px;white-space:nowrap}
+.chart-data-tbl td:first-child{text-align:left;font-weight:600;font-size:9px;background:#f5f5f5;min-width:90px;padding-left:4px}
+.chart-data-tbl td.mes-hl{background:#e8f5e9;font-weight:bold}
+.chart-data-tbl .legend-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:3px;vertical-align:middle}
+/* Desvio box */
+.desvio-box{position:absolute;top:30px;left:60px;background:rgba(255,255,255,0.92);border:1.5px solid #ccc;border-radius:6px;padding:8px 16px;text-align:center;z-index:5}
+.desvio-box .val{font-size:28px;font-weight:300;color:var(--g)}
+.desvio-box .lbl{font-size:10px;color:#888}
+.chart-wrapper{position:relative}
+/* Annotation for December */
+.dez-annotation{position:absolute;top:30px;right:15px;font-size:10px;color:#555;font-weight:bold;z-index:5}
 @media(max-width:768px){.card-grid{grid-template-columns:1fr}.chart-row{flex-direction:column}.mn-grid{grid-template-columns:repeat(6,1fr)}}
 </style>
 </head>
@@ -76,7 +85,7 @@ body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--bg);color:#333;pa
 <div class="download-bar">
  <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
   <span style="font-weight:bold;color:var(--g);font-size:17px">Sumario Executivo - Guaiba</span>
-  <select id="mesRef"><option value="janeiro">Jan</option><option value="fevereiro">Fev</option><option value="marco">Mar</option><option value="abril">Abr</option><option value="maio" selected>Mai</option><option value="junho">Jun</option><option value="julho">Jul</option><option value="agosto">Ago</option><option value="setembro">Set</option><option value="outubro">Out</option><option value="novembro">Nov</option><option value="dezembro">Dez</option></select>
+  <select id="mesRef" onchange="onMesChange()"><option value="0">Jan</option><option value="1">Fev</option><option value="2">Mar</option><option value="3">Abr</option><option value="4" selected>Mai</option><option value="5">Jun</option><option value="6">Jul</option><option value="7">Ago</option><option value="8">Set</option><option value="9">Out</option><option value="10">Nov</option><option value="11">Dez</option></select>
   <input type="number" id="anoRef" value="2026" style="width:70px">
   <span style="font-size:12px;color:#555">Rev:</span>
   <input type="text" id="revRef" value="01" style="width:40px">
@@ -102,102 +111,69 @@ body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--bg);color:#333;pa
 <!-- SEGURANCA -->
 <div class="sec"><div class="sec-t" onclick="tog(this)">Seguranca e Meio Ambiente</div><div class="sec-b">
  <div class="fg"><label>Texto introdutorio</label><textarea id="seg_intro" rows="1">O efetivo máximo no período totalizou 173 pessoas, com 33,5 mil horas trabalhadas mês.</textarea></div>
-
  <div class="card-grid">
-  <!-- KPIs Seguranca -->
-  <div class="card" id="cardSegKpi">
-   <h4>Dados gerais de Seguranca</h4>
+  <div class="card"><h4>Dados gerais de Seguranca</h4>
    <table class="dtbl" id="tblSeg">
     <tr><th>Seguridad y Medio Ambiente</th><th>Meta</th><th>Ano (cc)</th></tr>
-    <tr><td>ACTP</td><td><input value="0" onchange="updateCharts()"></td><td><input value="0" onchange="updateCharts()"></td></tr>
-    <tr><td>ASTP</td><td><input value="1" onchange="updateCharts()"></td><td><input value="0" onchange="updateCharts()"></td></tr>
-    <tr><td>IOCAs Leves</td><td><input value="0" onchange="updateCharts()"></td><td><input value="0" onchange="updateCharts()"></td></tr>
-    <tr><td>IOCAs Serios</td><td><input value="1" onchange="updateCharts()"></td><td><input value="0" onchange="updateCharts()"></td></tr>
-    <tr><td>IOCAs Graves</td><td><input value="0" onchange="updateCharts()"></td><td><input value="0" onchange="updateCharts()"></td></tr>
-    <tr><td>IOCAs Muy Graves</td><td><input value="0" onchange="updateCharts()"></td><td><input value="0" onchange="updateCharts()"></td></tr>
+    <tr><td>ACTP</td><td><input value="0"></td><td><input value="0"></td></tr>
+    <tr><td>ASTP</td><td><input value="1"></td><td><input value="0"></td></tr>
+    <tr><td>IOCAs Leves</td><td><input value="0"></td><td><input value="0"></td></tr>
+    <tr><td>IOCAs Serios</td><td><input value="1"></td><td><input value="0"></td></tr>
+    <tr><td>IOCAs Graves</td><td><input value="0"></td><td><input value="0"></td></tr>
+    <tr><td>IOCAs Muy Graves</td><td><input value="0"></td><td><input value="0"></td></tr>
    </table>
   </div>
-
-  <!-- KPIs Card -->
-  <div class="card">
-   <h4 id="kpiTitle">MAIO/2026 &nbsp;&nbsp;&nbsp; ACUMULADO ANO</h4>
+  <div class="card"><h4 id="kpiTitle">MAIO/2026 &nbsp; | &nbsp; ACUMULADO ANO</h4>
    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
-    <div class="kpi-item"><input id="kpi_acid_mes" value="0" style="width:60px;text-align:center;font-size:18px;font-weight:bold;border:1px solid #ddd;border-radius:4px"><div class="lbl">Acidentes Reportaveis</div></div>
-    <div class="kpi-item"><input id="kpi_acid_ac" value="0" style="width:60px;text-align:center;font-size:18px;font-weight:bold;border:1px solid #ddd;border-radius:4px"><div class="lbl">Acidentes Reportaveis</div></div>
-    <div class="kpi-item"><input id="kpi_dias_mes" value="31" style="width:60px;text-align:center;font-size:18px;font-weight:bold;border:1px solid #ddd;border-radius:4px"><div class="lbl">Dias sem ACTP</div></div>
-    <div class="kpi-item"><input id="kpi_dias_ac" value="151" style="width:60px;text-align:center;font-size:18px;font-weight:bold;border:1px solid #ddd;border-radius:4px"><div class="lbl">Dias sem ACTP</div></div>
-    <div class="kpi-item"><input id="kpi_hht_mes" value="33,50" style="width:60px;text-align:center;font-size:18px;font-weight:bold;border:1px solid #ddd;border-radius:4px"><div class="lbl">Hht x 1000</div></div>
-    <div class="kpi-item"><input id="kpi_hht_ac" value="167,10" style="width:60px;text-align:center;font-size:18px;font-weight:bold;border:1px solid #ddd;border-radius:4px"><div class="lbl">Hht x 1000</div></div>
-    <div class="kpi-item"><input id="kpi_freq_mes" value="0,00" style="width:60px;text-align:center;font-size:18px;font-weight:bold;border:1px solid #ddd;border-radius:4px"><div class="lbl">Tx. Freq. (ACTP+ASTP)</div></div>
-    <div class="kpi-item"><input id="kpi_freq_ac" value="0,00" style="width:60px;text-align:center;font-size:18px;font-weight:bold;border:1px solid #ddd;border-radius:4px"><div class="lbl">Tx. Freq. (ACTP+ASTP)</div></div>
+    <div class="kpi-item"><input id="kpi_acid_mes" value="0" style="width:50px;text-align:center;font-size:18px;font-weight:bold;border:1px solid #ddd;border-radius:4px"><div class="lbl">Acidentes Reportaveis</div></div>
+    <div class="kpi-item"><input id="kpi_acid_ac" value="0" style="width:50px;text-align:center;font-size:18px;font-weight:bold;border:1px solid #ddd;border-radius:4px"><div class="lbl">Acidentes Reportaveis</div></div>
+    <div class="kpi-item"><input id="kpi_dias_mes" value="31" style="width:50px;text-align:center;font-size:18px;font-weight:bold;border:1px solid #ddd;border-radius:4px"><div class="lbl">Dias sem ACTP</div></div>
+    <div class="kpi-item"><input id="kpi_dias_ac" value="151" style="width:50px;text-align:center;font-size:18px;font-weight:bold;border:1px solid #ddd;border-radius:4px"><div class="lbl">Dias sem ACTP</div></div>
+    <div class="kpi-item"><input id="kpi_hht_mes" value="33,50" style="width:55px;text-align:center;font-size:18px;font-weight:bold;border:1px solid #ddd;border-radius:4px"><div class="lbl">Hht x 1000</div></div>
+    <div class="kpi-item"><input id="kpi_hht_ac" value="167,10" style="width:55px;text-align:center;font-size:18px;font-weight:bold;border:1px solid #ddd;border-radius:4px"><div class="lbl">Hht x 1000</div></div>
+    <div class="kpi-item"><input id="kpi_freq_mes" value="0,00" style="width:50px;text-align:center;font-size:18px;font-weight:bold;border:1px solid #ddd;border-radius:4px"><div class="lbl">Tx. Freq. (ACTP+ASTP)</div></div>
+    <div class="kpi-item"><input id="kpi_freq_ac" value="0,00" style="width:50px;text-align:center;font-size:18px;font-weight:bold;border:1px solid #ddd;border-radius:4px"><div class="lbl">Tx. Freq. (ACTP+ASTP)</div></div>
    </div>
   </div>
-
-  <!-- Meio Ambiente -->
-  <div class="card">
-   <h4>Dados de Meio Ambiente</h4>
+  <div class="card"><h4>Dados de Meio Ambiente</h4>
    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
     <div class="kpi-item"><input id="kpi_oc_mes" value="0" style="width:50px;text-align:center;font-size:18px;font-weight:bold;border:1px solid #ddd;border-radius:4px"><div class="lbl">Ocorrencias Ambientais</div></div>
     <div class="kpi-item"><input id="kpi_oc_ac" value="0" style="width:50px;text-align:center;font-size:18px;font-weight:bold;border:1px solid #ddd;border-radius:4px"><div class="lbl">Ocorrencias Ambientais</div></div>
    </div>
    <div class="fg"><label>Observacoes</label><textarea id="seg_obs" rows="1">Sem observações de segurança.</textarea></div>
   </div>
-
-  <!-- Histograma -->
-  <div class="card">
-   <h4>Histograma - Efetivo Total</h4>
+  <div class="card"><h4>Histograma - Efetivo Total</h4>
    <div class="mn-grid" id="gridHist"></div>
-   <canvas id="chartHist"></canvas>
+   <canvas id="chartHist" height="140"></canvas>
   </div>
  </div>
-
- <!-- Hht Chart -->
  <div class="chart-box" style="margin-top:10px">
-  <h4>Homem-hora total (Hht x1000)</h4>
+  <h4 style="color:var(--g);font-size:14px">Hht (x1000)</h4>
   <div class="mn-grid" id="gridHht"></div>
-  <canvas id="chartHht"></canvas>
+  <canvas id="chartHht" height="130"></canvas>
+  <table class="chart-data-tbl" id="tblHht"></table>
  </div>
 </div></div>
 
 <!-- PORTFOLIO -->
 <div class="sec"><div class="sec-t" onclick="tog(this)">Portfolio de Projetos</div><div class="sec-b">
  <div class="fg"><label>Texto introdutorio</label><textarea id="port_intro" rows="1">Abaixo a visão geral da carteira de projetos.</textarea></div>
-
  <div class="chart-row">
-  <div class="chart-box">
-   <h4>Status</h4>
-   <div class="donut-inputs" id="diStatus"></div>
-   <canvas id="chartStatus"></canvas>
-  </div>
-  <div class="chart-box">
-   <h4>por Origen</h4>
-   <div class="donut-inputs" id="diOrigen"></div>
-   <canvas id="chartOrigen"></canvas>
-  </div>
+  <div class="chart-box"><h4>Status</h4><div class="donut-inputs" id="diStatus"></div><canvas id="chartStatus" height="160"></canvas></div>
+  <div class="chart-box"><h4>por Origen</h4><div class="donut-inputs" id="diOrigen"></div><canvas id="chartOrigen" height="160"></canvas></div>
  </div>
  <div class="chart-row">
-  <div class="chart-box">
-   <h4>por Gestion</h4>
-   <div class="donut-inputs" id="diGestion"></div>
-   <canvas id="chartGestion"></canvas>
-  </div>
-  <div class="chart-box">
-   <h4>por Naturaleza</h4>
-   <div class="donut-inputs" id="diNaturaleza"></div>
-   <canvas id="chartNaturaleza"></canvas>
-  </div>
+  <div class="chart-box"><h4>por Gestion</h4><div class="donut-inputs" id="diGestion"></div><canvas id="chartGestion" height="160"></canvas></div>
+  <div class="chart-box"><h4>por Naturaleza</h4><div class="donut-inputs" id="diNaturaleza"></div><canvas id="chartNaturaleza" height="160"></canvas></div>
  </div>
-
- <!-- KPI Table -->
- <div class="card" style="margin-top:10px">
-  <h4>Principais Indicadores</h4>
+ <div class="card" style="margin-top:10px"><h4>Principais Indicadores</h4>
   <table class="dtbl" id="tblKpi">
    <tr><th>Portafolio Proyectos</th><th>Meta</th><th>Mes</th><th>Ano (acc)</th></tr>
    <tr><td>100% Aprovacao de Projetos Especiais</td><td><input value="6"></td><td><input value="0"></td><td><input value="0"></td></tr>
    <tr><td>% Desvio Financeiro (Valor Real/Valor Previsto)</td><td><input value="<17%"></td><td><input value="-52,1%"></td><td><input value="-25,9%"></td></tr>
-   <tr><td>% Desvio Previsibilidade (Forecast)</td><td><input value="∆10%"></td><td><input value="3,8%"></td><td><input value="1,2%"></td></tr>
+   <tr><td>% Desvio Previsibilidade (Forecast)</td><td><input value="&#916;10%"></td><td><input value="3,8%"></td><td><input value="1,2%"></td></tr>
    <tr><td>% Variacao Avance Fisico do Portfolio</td><td><input value="<17%"></td><td><input value="-0,7%"></td><td><input value="-4,6%"></td></tr>
-   <tr><td>% APIs Vencidos em su Fecha de Origen (Cambio de Cierre)</td><td><input value="<25%"></td><td><input value="0,0%"></td><td><input value="0,0%"></td></tr>
+   <tr><td>% APIs Vencidos em su Fecha de Origen</td><td><input value="<25%"></td><td><input value="0,0%"></td><td><input value="0,0%"></td></tr>
    <tr><td>TIR</td><td><input value=">0,0%"></td><td><input value="0,0%"></td><td><input value="0,0%"></td></tr>
   </table>
  </div>
@@ -206,25 +182,32 @@ body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--bg);color:#333;pa
 <!-- VISAO FISICA -->
 <div class="sec"><div class="sec-t" onclick="tog(this)">Visao Fisica</div><div class="sec-b">
  <div class="fg"><label>Texto descritivo</label><textarea id="fisico_texto" rows="2">A curva abaixo apresenta o planejamento do % previsto para os projetos aprovados no orçamento anual. Acumulamos 53,4% de execução com desvio de -4,6% em relação as atividades planejadas (58,0%).</textarea></div>
- <div class="mn-label">Previsto (% mensal)</div>
- <div class="mn-grid" id="gridFisPrev"></div>
- <div class="mn-label">Real (% mensal)</div>
- <div class="mn-grid" id="gridFisReal"></div>
- <div class="mn-label">Linha Base 0 (% acumulado)</div>
- <div class="mn-grid" id="gridFisLB"></div>
- <div class="chart-box" style="margin-top:8px"><h4>Curva Geral</h4><canvas id="chartFisico" height="120"></canvas></div>
+ <div class="mn-label">Previsto (% mensal)</div><div class="mn-grid" id="gridFisPrev"></div>
+ <div class="mn-label">Real (% mensal)</div><div class="mn-grid" id="gridFisReal"></div>
+ <div class="mn-label">Linha Base 0 (% acumulado)</div><div class="mn-grid" id="gridFisLB"></div>
+ <div class="chart-box" style="margin-top:8px">
+  <div class="chart-wrapper">
+   <div class="desvio-box" id="desvioBox"><div class="val" id="desvioVal">-4,6%</div><div class="lbl">Desvio (%)</div></div>
+   <h4>Curva Geral</h4>
+   <canvas id="chartFisico" height="160"></canvas>
+  </div>
+  <table class="chart-data-tbl" id="tblFisico"></table>
+ </div>
 </div></div>
 
 <!-- VISAO FINANCEIRA -->
 <div class="sec"><div class="sec-t" onclick="tog(this)">Visao Financeira</div><div class="sec-b">
  <div class="fg"><label>Texto descritivo</label><textarea id="financeiro_texto" rows="2">A curva abaixo apresenta a previsão de desembolso dos projetos para o ano totalizando 11,9USDM. A diferença apresentada em dezembro diz respeito postergação e cancelamento dos seguintes projetos: Linha de warm up CR2, nova linha de vapor de média da DEFAPA e Novo sistema de trasnfêrencia de Cl02. O desembolso realizado em maio foi de USDM 4.85.</textarea></div>
- <div class="mn-label">Prev. Totalizado (MMUSD acum.)</div>
- <div class="mn-grid" id="gridFinPrev"></div>
- <div class="mn-label">Real + Previsto (MMUSD acum.)</div>
- <div class="mn-grid" id="gridFinRP"></div>
- <div class="mn-label">Real Acum. (MMUSD)</div>
- <div class="mn-grid" id="gridFinReal"></div>
- <div class="chart-box" style="margin-top:8px"><h4>Curva Financeira</h4><canvas id="chartFinanceiro" height="100"></canvas></div>
+ <div class="mn-label">Prev. Totalizado (MMUSD acum.)</div><div class="mn-grid" id="gridFinPrev"></div>
+ <div class="mn-label">Real + Previsto (MMUSD acum.)</div><div class="mn-grid" id="gridFinRP"></div>
+ <div class="mn-label">Real Acum. (MMUSD)</div><div class="mn-grid" id="gridFinReal"></div>
+ <div class="chart-box" style="margin-top:8px">
+  <div class="chart-wrapper">
+   <div class="dez-annotation" id="dezAnnotation">Dezembro: USD MM 0.01</div>
+   <canvas id="chartFinanceiro" height="140"></canvas>
+  </div>
+  <table class="chart-data-tbl" id="tblFinanceiro"></table>
+ </div>
 </div></div>
 
 <!-- PRINCIPAIS PROJETOS -->
@@ -245,37 +228,60 @@ body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--bg);color:#333;pa
  <div id="photoEntries"></div>
  <button class="btn-a" onclick="addPhoto()">+ Adicionar registro</button>
 </div></div>
-
-</div><!-- /container -->
+</div>
 
 <script>
 var MESES=['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
+var MESES_FULL=['janeiro','fevereiro','marco','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+var MESES_CAP=['Janeiro','Fevereiro','Marco','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 var imageStore={};
 var charts={};
+var mesAtivo=4; // maio = index 4
+
+Chart.register(ChartDataLabels);
 
 function tog(el){el.classList.toggle('c');el.nextElementSibling.classList.toggle('h')}
+function pf(v){return parseFloat(String(v).replace(',','.'))||0}
+function fmt(v){return v.toFixed(2).replace('.',',')}
+function calcAcum(arr){var ac=[],s=0;arr.forEach(function(v){s+=v;ac.push(parseFloat(s.toFixed(2)))});return ac}
 
-// ========== MONTHLY GRID BUILDER ==========
-function buildGrid(containerId,values,onChange){
- var c=document.getElementById(containerId);
- c.innerHTML='';
- MESES.forEach(function(m,i){
-  var lbl=document.createElement('label');lbl.textContent=m;c.appendChild(lbl);
- });
- values.forEach(function(v,i){
-  var inp=document.createElement('input');
-  inp.type='text';inp.value=v;inp.dataset.idx=i;
-  inp.addEventListener('change',onChange);
-  c.appendChild(inp);
- });
-}
-function readGrid(containerId){
- var inputs=document.querySelectorAll('#'+containerId+' input');
- var vals=[];inputs.forEach(function(inp){vals.push(parseFloat(inp.value.replace(',','.'))||0)});
- return vals;
+function onMesChange(){
+ mesAtivo=parseInt(document.getElementById('mesRef').value);
+ highlightGrids();
+ updateAllCharts();
+ var mc=MESES_CAP[mesAtivo];
+ var ano=document.getElementById('anoRef').value;
+ document.getElementById('kpiTitle').innerHTML=mc.toUpperCase()+'/'+ano+' &nbsp; | &nbsp; ACUMULADO ANO';
+ // Update dezembro annotation
+ var finPrev=readGrid('gridFinPrev');
+ var finRP=readGrid('gridFinRP');
+ var diff=(finPrev[11]-finRP[11]).toFixed(2);
+ document.getElementById('dezAnnotation').textContent='Dezembro: USD MM '+diff;
 }
 
-// ========== INIT MONTHLY GRIDS ==========
+function highlightGrids(){
+ document.querySelectorAll('.mn-grid input').forEach(function(inp){
+  var idx=Array.from(inp.parentNode.querySelectorAll('input')).indexOf(inp);
+  inp.classList.toggle('mes-ativo',idx===mesAtivo);
+ });
+}
+
+// ========== MONTHLY GRID ==========
+function buildGrid(cid,vals,onChange){
+ var c=document.getElementById(cid);c.innerHTML='';
+ MESES.forEach(function(m){var l=document.createElement('label');l.textContent=m;c.appendChild(l)});
+ vals.forEach(function(v,i){
+  var inp=document.createElement('input');inp.type='text';inp.value=v;
+  if(i===mesAtivo)inp.className='mes-ativo';
+  inp.addEventListener('change',onChange);c.appendChild(inp);
+ });
+}
+function readGrid(cid){
+ var inps=document.querySelectorAll('#'+cid+' input');
+ var v=[];inps.forEach(function(inp){v.push(pf(inp.value))});return v;
+}
+
+// ========== INIT DATA ==========
 var dataHist=[272,212,178,171,173,0,0,0,0,0,0,0];
 var dataHht=[45,28,27,34,33.5,0,0,0,0,0,0,0];
 var dataFisPrev=[6.09,34.81,9.90,8.80,4.88,5.43,5.87,5.06,7.32,5.12,3.59,3.13];
@@ -285,111 +291,207 @@ var dataFinPrev=[0.75,2.17,3.98,5.27,6.55,7.40,8.17,8.63,9.33,10.22,10.92,11.90]
 var dataFinRP=[0.75,2.18,3.50,4.24,4.85,5.55,6.74,7.93,8.92,9.82,10.91,11.89];
 var dataFinReal=[0.75,2.18,3.50,4.24,4.85,0,0,0,0,0,0,0];
 
-buildGrid('gridHist',dataHist,function(){updateCharts()});
-buildGrid('gridHht',dataHht.map(function(v){return v.toString().replace('.',',')}),function(){updateCharts()});
-buildGrid('gridFisPrev',dataFisPrev.map(function(v){return v.toFixed(2).replace('.',',')}),function(){updateCharts()});
-buildGrid('gridFisReal',dataFisReal.map(function(v){return v.toFixed(2).replace('.',',')}),function(){updateCharts()});
-buildGrid('gridFisLB',dataFisLB.map(function(v){return v.toFixed(2).replace('.',',')}),function(){updateCharts()});
-buildGrid('gridFinPrev',dataFinPrev.map(function(v){return v.toFixed(2).replace('.',',')}),function(){updateCharts()});
-buildGrid('gridFinRP',dataFinRP.map(function(v){return v.toFixed(2).replace('.',',')}),function(){updateCharts()});
-buildGrid('gridFinReal',dataFinReal.map(function(v){return v.toFixed(2).replace('.',',')}),function(){updateCharts()});
+buildGrid('gridHist',dataHist,function(){updateAllCharts()});
+buildGrid('gridHht',dataHht.map(function(v){return String(v).replace('.',',')}),function(){updateAllCharts()});
+buildGrid('gridFisPrev',dataFisPrev.map(fmt),function(){updateAllCharts()});
+buildGrid('gridFisReal',dataFisReal.map(fmt),function(){updateAllCharts()});
+buildGrid('gridFisLB',dataFisLB.map(fmt),function(){updateAllCharts()});
+buildGrid('gridFinPrev',dataFinPrev.map(fmt),function(){updateAllCharts()});
+buildGrid('gridFinRP',dataFinRP.map(fmt),function(){updateAllCharts()});
+buildGrid('gridFinReal',dataFinReal.map(fmt),function(){updateAllCharts()});
 
-// ========== DONUT CHARTS DATA ==========
+// ========== DONUT DATA ==========
 var donutData={
  status:{labels:['Aprovado','Pendente apr.','Especial','Cancelado'],values:[53,5,3,2],colors:['#005a32','#4caf50','#c0ca33','#bdbdbd']},
  origen:{labels:['Carry Over','Novo','Plurianual'],values:[40,12,1],colors:['#005a32','#43a047','#a5d6a7']},
- gestion:{labels:['Gerencia de Seg.','Recuperacao','Gerencia MA','Areas Gerais','Gerencia','Producao','Gerencia de...'],values:[13,11,7,6,4,4,2],colors:['#005a32','#1b5e20','#2e7d32','#388e3c','#43a047','#66bb6a','#a5d6a7']},
+ gestion:{labels:['Ger. Seguranca','Recuperacao','Ger. Meio Amb.','Areas Gerais','Gerencia','Producao','Ger. de...'],values:[13,11,7,6,4,4,2],colors:['#005a32','#1b5e20','#2e7d32','#388e3c','#43a047','#66bb6a','#a5d6a7']},
  naturaleza:{labels:['Continuidade Op.','(Em branco)','Seguranca','Meio Ambiente','Sustentabilidade'],values:[15,13,12,8,2],colors:['#005a32','#2e7d32','#43a047','#66bb6a','#a5d6a7']}
 };
-
-function buildDonutInputs(containerId,key){
- var c=document.getElementById(containerId);c.innerHTML='';
+function buildDonutInputs(cid,key){
+ var c=document.getElementById(cid);c.innerHTML='';
  donutData[key].labels.forEach(function(l,i){
-  var div=document.createElement('div');div.className='di';
-  div.innerHTML='<span>'+l+':</span><input type="number" value="'+donutData[key].values[i]+'" data-key="'+key+'" data-idx="'+i+'" onchange="updDonut(this)">';
-  c.appendChild(div);
+  var d=document.createElement('div');d.className='di';
+  d.innerHTML='<span>'+l+':</span><input type="number" value="'+donutData[key].values[i]+'" data-key="'+key+'" data-idx="'+i+'" onchange="updDonut(this)">';
+  c.appendChild(d);
  });
 }
-function updDonut(inp){
- var k=inp.dataset.key,i=parseInt(inp.dataset.idx);
- donutData[k].values[i]=parseInt(inp.value)||0;
- updateCharts();
-}
+function updDonut(inp){donutData[inp.dataset.key].values[parseInt(inp.dataset.idx)]=parseInt(inp.value)||0;updateAllCharts()}
 buildDonutInputs('diStatus','status');
 buildDonutInputs('diOrigen','origen');
 buildDonutInputs('diGestion','gestion');
 buildDonutInputs('diNaturaleza','naturaleza');
 
+// ========== BAR COLORS WITH HIGHLIGHT ==========
+function barColors(base,highlight,n){
+ return Array(n).fill(0).map(function(_,i){return i===mesAtivo?highlight:base});
+}
+
 // ========== CREATE CHARTS ==========
 function createCharts(){
+ var dlOpts={display:true,anchor:'end',align:'top',color:'#333',font:{size:9,weight:'bold'},
+  formatter:function(v){return v>0?v:''}};
+ var dlOff={display:false};
+
  // Histograma
  charts.hist=new Chart(document.getElementById('chartHist'),{
   type:'bar',
-  data:{labels:MESES,datasets:[{label:'Efetivo Total',data:dataHist.slice(),backgroundColor:'#2e7d32',borderRadius:3}]},
-  options:{responsive:true,plugins:{legend:{display:true,position:'bottom',labels:{font:{size:10}}},datalabels:false},scales:{y:{beginAtZero:true,ticks:{font:{size:9}}},x:{ticks:{font:{size:9}}}}}
+  data:{labels:MESES,datasets:[{label:'Efetivo Total',data:dataHist.slice(),backgroundColor:barColors('#2e7d32','#ffc107',12),borderRadius:2}]},
+  options:{responsive:true,animation:{duration:300},plugins:{legend:{display:true,position:'bottom',labels:{font:{size:10},usePointStyle:true,pointStyle:'circle'}},datalabels:dlOpts},scales:{y:{beginAtZero:true,grid:{color:'#eee'},ticks:{font:{size:9}}},x:{grid:{display:false},ticks:{font:{size:9,weight:'bold'}}}}}
  });
 
  // Hht
  charts.hht=new Chart(document.getElementById('chartHht'),{
   type:'bar',
   data:{labels:MESES,datasets:[
-   {label:'Hht (mil)',data:dataHht.slice(),backgroundColor:'#2e7d32',borderRadius:3,order:2},
-   {label:'Hht (mil) AC',data:calcAcum(dataHht),type:'line',borderColor:'#1b5e20',backgroundColor:'#1b5e20',pointRadius:4,pointBackgroundColor:'#8bc34a',borderWidth:2,order:1,yAxisID:'y1'}
+   {label:'Hht (mil)',data:dataHht.slice(),backgroundColor:barColors('#2e7d32','#ffc107',12),borderRadius:2,order:2,yAxisID:'y',
+    datalabels:{display:true,anchor:'end',align:'top',color:'#333',font:{size:9,weight:'bold'},formatter:function(v){return v>0?v:''}}},
+   {label:'Hht (mil) AC',data:calcAcum(dataHht),type:'line',borderColor:'#1b5e20',backgroundColor:'transparent',
+    pointRadius:5,pointBackgroundColor:function(ctx){return ctx.dataIndex===mesAtivo?'#ffc107':'#8bc34a'},
+    pointBorderColor:'#1b5e20',pointBorderWidth:2,borderWidth:2,order:1,yAxisID:'y1',
+    datalabels:{display:true,anchor:'end',align:'top',color:'#2e7d32',font:{size:9,weight:'bold'},
+     formatter:function(v){return v>0?v:''}}}
   ]},
-  options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:10}}}},scales:{y:{beginAtZero:true,position:'left',ticks:{font:{size:9}}},y1:{beginAtZero:true,position:'right',grid:{drawOnChartArea:false},ticks:{font:{size:9}}},x:{ticks:{font:{size:9}}}}}
+  options:{responsive:true,animation:{duration:300},plugins:{legend:{position:'bottom',labels:{font:{size:10},usePointStyle:true}}},
+   scales:{y:{beginAtZero:true,position:'left',grid:{color:'#eee'},ticks:{font:{size:9}}},y1:{beginAtZero:true,position:'right',grid:{drawOnChartArea:false},ticks:{font:{size:9}}},x:{grid:{display:false},ticks:{font:{size:9,weight:'bold'}}}}}
  });
 
  // Donuts
  ['status','origen','gestion','naturaleza'].forEach(function(k){
-  var canvasId='chart'+k.charAt(0).toUpperCase()+k.slice(1);
-  charts[k]=new Chart(document.getElementById(canvasId),{
+  var cid='chart'+k.charAt(0).toUpperCase()+k.slice(1);
+  var total=donutData[k].values.reduce(function(a,b){return a+b},0);
+  charts[k]=new Chart(document.getElementById(cid),{
    type:'doughnut',
-   data:{labels:donutData[k].labels,datasets:[{data:donutData[k].values.slice(),backgroundColor:donutData[k].colors}]},
-   options:{responsive:true,cutout:'60%',plugins:{legend:{position:'bottom',labels:{font:{size:9}}}}}
+   data:{labels:donutData[k].labels,datasets:[{data:donutData[k].values.slice(),backgroundColor:donutData[k].colors,borderWidth:1}]},
+   options:{responsive:true,cutout:'60%',plugins:{
+    legend:{position:'bottom',labels:{font:{size:9},usePointStyle:true,pointStyle:'circle',padding:8}},
+    datalabels:{display:true,color:'#333',font:{size:9,weight:'bold'},formatter:function(v,ctx){return ctx.chart.data.labels[ctx.dataIndex]+' '+v}}
+   }},
+   plugins:[{id:'centerText',beforeDraw:function(chart){
+    var w=chart.width,h=chart.height,ctx=chart.ctx;
+    var total=chart.data.datasets[0].data.reduce(function(a,b){return a+b},0);
+    ctx.save();ctx.font='bold 24px Segoe UI';ctx.fillStyle='#333';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(total,w/2,h/2-10);ctx.restore();
+   }}]
   });
  });
 
  // Curva Geral Fisica
- var fisPrev=readGrid('gridFisPrev'),fisReal=readGrid('gridFisReal'),fisLB=readGrid('gridFisLB');
- var fisPrevAc=calcAcum(fisPrev),fisRealAc=calcAcum(fisReal);
+ var fp=readGrid('gridFisPrev'),fr=readGrid('gridFisReal'),fl=readGrid('gridFisLB');
+ var fpAc=calcAcum(fp),frAc=calcAcum(fr);
  charts.fisico=new Chart(document.getElementById('chartFisico'),{
   type:'bar',
   data:{labels:MESES,datasets:[
-   {label:'Previsto',data:fisPrev,backgroundColor:'#1b5e20',borderRadius:2,order:3},
-   {label:'Real',data:fisReal,backgroundColor:'#66bb6a',borderRadius:2,order:3},
-   {label:'LB 0',data:fisLB,type:'line',borderColor:'#9e9e9e',pointRadius:2,borderWidth:1.5,borderDash:[4,3],order:1,fill:false},
-   {label:'Previsto Ac',data:fisPrevAc,type:'line',borderColor:'#8bc34a',pointRadius:2,borderWidth:2,order:1,fill:false},
-   {label:'Real Ac',data:fisRealAc,type:'line',borderColor:'#1b5e20',pointRadius:3,pointBackgroundColor:'#1b5e20',borderWidth:2.5,order:1,fill:false}
+   {label:'Previsto',data:fp,backgroundColor:barColors('#1b5e20','#ffc107',12),borderRadius:1,order:4,barPercentage:0.7,categoryPercentage:0.8,
+    datalabels:dlOff},
+   {label:'Real',data:fr,backgroundColor:barColors('#66bb6a','#ffe082',12),borderRadius:1,order:4,barPercentage:0.7,categoryPercentage:0.8,
+    datalabels:dlOff},
+   {label:'LB 0',data:fl,type:'line',borderColor:'#9e9e9e',pointRadius:2,pointBackgroundColor:'#9e9e9e',borderWidth:1.5,borderDash:[5,3],order:1,fill:false,datalabels:dlOff},
+   {label:'Previsto Ac',data:fpAc,type:'line',borderColor:'#8bc34a',pointRadius:3,pointBackgroundColor:function(ctx){return ctx.dataIndex===mesAtivo?'#ffc107':'#8bc34a'},pointBorderColor:'#8bc34a',borderWidth:2,order:2,fill:false,datalabels:dlOff},
+   {label:'Real Ac',data:frAc,type:'line',borderColor:'#1b5e20',pointRadius:4,
+    pointBackgroundColor:function(ctx){return ctx.dataIndex===mesAtivo?'#ffc107':'#1b5e20'},
+    pointBorderColor:'#1b5e20',pointBorderWidth:2,borderWidth:3,order:1,fill:false,datalabels:dlOff}
   ]},
-  options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:9}}}},scales:{y:{beginAtZero:true,max:100,ticks:{font:{size:9},callback:function(v){return v.toFixed(0)}}},x:{ticks:{font:{size:9}}}}}
+  options:{responsive:true,animation:{duration:300},
+   plugins:{legend:{position:'bottom',labels:{font:{size:10},usePointStyle:true,padding:10}},datalabels:{display:false}},
+   scales:{y:{beginAtZero:true,max:100,grid:{color:'#eee'},ticks:{font:{size:9},stepSize:10,callback:function(v){return v.toFixed(0)+',00'}}},
+    x:{grid:{display:false},ticks:{font:{size:10,weight:'bold'}}}}}
  });
 
  // Curva Financeira
- var finPrev=readGrid('gridFinPrev'),finRP=readGrid('gridFinRP'),finReal=readGrid('gridFinReal');
+ var fnP=readGrid('gridFinPrev'),fnRP=readGrid('gridFinRP'),fnR=readGrid('gridFinReal');
  charts.financeiro=new Chart(document.getElementById('chartFinanceiro'),{
   type:'line',
   data:{labels:MESES,datasets:[
-   {label:'Prev. Totalizado',data:finPrev,borderColor:'#3f51b5',pointRadius:2,borderWidth:2,fill:false},
-   {label:'Real + Previsto',data:finRP,borderColor:'#9e9e9e',pointRadius:2,borderWidth:1.5,fill:false},
-   {label:'Real Acum.',data:finReal,borderColor:'#1b5e20',pointRadius:3,pointBackgroundColor:'#1b5e20',borderWidth:2.5,fill:false}
+   {label:'Prev. Totalizado',data:fnP,borderColor:'#3949ab',pointRadius:3,
+    pointBackgroundColor:function(ctx){return ctx.dataIndex===mesAtivo?'#ffc107':'#3949ab'},
+    pointBorderColor:'#3949ab',borderWidth:2.5,fill:false,datalabels:dlOff},
+   {label:'Real + Previsto',data:fnRP,borderColor:'#9e9e9e',pointRadius:2,
+    pointBackgroundColor:function(ctx){return ctx.dataIndex===mesAtivo?'#ffc107':'#9e9e9e'},
+    borderWidth:1.5,fill:false,datalabels:dlOff},
+   {label:'Real. Acum.',data:fnR,borderColor:'#1b5e20',pointRadius:4,
+    pointBackgroundColor:function(ctx){return ctx.dataIndex===mesAtivo?'#ffc107':'#1b5e20'},
+    pointBorderColor:'#1b5e20',pointBorderWidth:2,borderWidth:3,fill:false,datalabels:dlOff}
   ]},
-  options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:9}}}},scales:{y:{beginAtZero:true,ticks:{font:{size:9}}},x:{ticks:{font:{size:9}}}}}
+  options:{responsive:true,animation:{duration:300},
+   plugins:{legend:{position:'bottom',align:'start',labels:{font:{size:10},usePointStyle:true,padding:12}},datalabels:{display:false}},
+   scales:{y:{beginAtZero:true,grid:{color:'#eee'},ticks:{font:{size:9},callback:function(v){return v.toFixed(2).replace('.',',')}}},
+    x:{grid:{display:false},ticks:{font:{size:10,weight:'bold'}}}}}
  });
+
+ buildDataTables();
 }
 
-function calcAcum(arr){
- var ac=[];var sum=0;
- arr.forEach(function(v){sum+=v;ac.push(parseFloat(sum.toFixed(2)))});
- return ac;
+// ========== DATA TABLES BELOW CHARTS ==========
+function buildDataTables(){
+ buildHhtTable();
+ buildFisicoTable();
+ buildFinanceiroTable();
 }
 
-function updateCharts(){
+function buildHhtTable(){
+ var hht=readGrid('gridHht');var ac=calcAcum(hht);
+ var html='<tr><td><span class="legend-dot" style="background:#2e7d32"></span>Hht (mil)</td>';
+ MESES.forEach(function(_,i){html+='<td'+(i===mesAtivo?' class="mes-hl"':'')+'>'+fmt(hht[i])+'</td>'});
+ html+='</tr><tr><td><span class="legend-dot" style="background:#1b5e20"></span>Hht AC</td>';
+ MESES.forEach(function(_,i){html+='<td'+(i===mesAtivo?' class="mes-hl"':'')+'>'+fmt(ac[i])+'</td>'});
+ html+='</tr>';
+ document.getElementById('tblHht').innerHTML=html;
+}
+
+function buildFisicoTable(){
+ var fp=readGrid('gridFisPrev'),fr=readGrid('gridFisReal'),fl=readGrid('gridFisLB');
+ var fpAc=calcAcum(fp),frAc=calcAcum(fr);
+ var rows=[
+  {label:'Previsto',color:'#1b5e20',data:fp},
+  {label:'Real',color:'#66bb6a',data:fr},
+  {label:'LB 0',color:'#9e9e9e',data:fl},
+  {label:'Previsto Ac',color:'#8bc34a',data:fpAc},
+  {label:'Real Ac',color:'#1b5e20',data:frAc}
+ ];
+ var html='';
+ rows.forEach(function(r){
+  html+='<tr><td><span class="legend-dot" style="background:'+r.color+'"></span>'+r.label+'</td>';
+  MESES.forEach(function(_,i){html+='<td'+(i===mesAtivo?' class="mes-hl"':'')+'>'+fmt(r.data[i])+'</td>'});
+  html+='</tr>';
+ });
+ document.getElementById('tblFisico').innerHTML=html;
+ // Update desvio
+ var fpAcM=calcAcum(fp)[mesAtivo];
+ var frAcM=calcAcum(fr)[mesAtivo];
+ var desv=(frAcM-fpAcM).toFixed(1).replace('.',',');
+ if(frAcM-fpAcM>0)desv='+'+desv;
+ document.getElementById('desvioVal').textContent=desv+'%';
+}
+
+function buildFinanceiroTable(){
+ var fnP=readGrid('gridFinPrev'),fnRP=readGrid('gridFinRP'),fnR=readGrid('gridFinReal');
+ var rows=[
+  {label:'Prev. Totalizado',color:'#3949ab',data:fnP},
+  {label:'Real + Previsto',color:'#9e9e9e',data:fnRP},
+  {label:'Real. Acum.',color:'#1b5e20',data:fnR}
+ ];
+ var html='';
+ rows.forEach(function(r){
+  html+='<tr><td><span class="legend-dot" style="background:'+r.color+'"></span>'+r.label+'</td>';
+  MESES.forEach(function(_,i){html+='<td'+(i===mesAtivo?' class="mes-hl"':'')+'>'+fmt(r.data[i])+'</td>'});
+  html+='</tr>';
+ });
+ document.getElementById('tblFinanceiro').innerHTML=html;
+ var diff=(fnP[11]-fnRP[11]).toFixed(2);
+ document.getElementById('dezAnnotation').textContent='Dezembro: USD MM '+diff;
+}
+
+function updateAllCharts(){
  var h=readGrid('gridHist');
- charts.hist.data.datasets[0].data=h;charts.hist.update();
+ charts.hist.data.datasets[0].data=h;
+ charts.hist.data.datasets[0].backgroundColor=barColors('#2e7d32','#ffc107',12);
+ charts.hist.update();
 
  var hht=readGrid('gridHht');
  charts.hht.data.datasets[0].data=hht;
- charts.hht.data.datasets[1].data=calcAcum(hht);charts.hht.update();
+ charts.hht.data.datasets[0].backgroundColor=barColors('#2e7d32','#ffc107',12);
+ charts.hht.data.datasets[1].data=calcAcum(hht);
+ charts.hht.update();
 
  ['status','origen','gestion','naturaleza'].forEach(function(k){
   charts[k].data.datasets[0].data=donutData[k].values.slice();charts[k].update();
@@ -397,17 +499,21 @@ function updateCharts(){
 
  var fp=readGrid('gridFisPrev'),fr=readGrid('gridFisReal'),fl=readGrid('gridFisLB');
  charts.fisico.data.datasets[0].data=fp;
+ charts.fisico.data.datasets[0].backgroundColor=barColors('#1b5e20','#ffc107',12);
  charts.fisico.data.datasets[1].data=fr;
+ charts.fisico.data.datasets[1].backgroundColor=barColors('#66bb6a','#ffe082',12);
  charts.fisico.data.datasets[2].data=fl;
  charts.fisico.data.datasets[3].data=calcAcum(fp);
  charts.fisico.data.datasets[4].data=calcAcum(fr);
  charts.fisico.update();
 
- var fnp=readGrid('gridFinPrev'),fnrp=readGrid('gridFinRP'),fnr=readGrid('gridFinReal');
- charts.financeiro.data.datasets[0].data=fnp;
- charts.financeiro.data.datasets[1].data=fnrp;
- charts.financeiro.data.datasets[2].data=fnr;
+ var fnP=readGrid('gridFinPrev'),fnRP=readGrid('gridFinRP'),fnR=readGrid('gridFinReal');
+ charts.financeiro.data.datasets[0].data=fnP;
+ charts.financeiro.data.datasets[1].data=fnRP;
+ charts.financeiro.data.datasets[2].data=fnR;
  charts.financeiro.update();
+
+ buildDataTables();
 }
 
 createCharts();
@@ -432,7 +538,6 @@ var initProj=[
  {n:"Adequação agua de serviço fase 3/8",s:"Atrasado",p:"100,00%",r:"99,50%",d:"-0,50%",v:"251.287",rf:"251.287",c:"0"},
  {n:"Nova rede de esgoto sanitário",s:"Atrasado",p:"86,50%",r:"84,50%",d:"-2,00%",v:"68.694",rf:"68.694",c:"0"}
 ];
-
 function addProjRow(p){
  var d=p||{n:"",s:"No prazo",p:"",r:"",d:"",v:"",rf:"",c:"0"};
  var opts=['No prazo','Atrasado','Adiantado','Concluido','Cancelado'];
@@ -451,18 +556,17 @@ function addPhoto(p){
  var d=p||{titulo:"",legenda:""};photoN++;var id='ph_'+photoN;
  var div=document.createElement('div');div.className='photo-entry';div.id=id;
  div.innerHTML='<div class="fr" style="align-items:end"><div class="fg" style="flex:2"><label>Titulo</label><input type="text" class="ph-t" value="'+d.titulo+'"></div><div class="fg" style="flex:3"><label>Legenda</label><input type="text" class="ph-c" value="'+d.legenda+'"></div><div class="fg" style="flex:0 0 auto"><button class="btn-r" onclick="remPhoto(\''+id+'\')">X</button></div></div><div class="img-slot" id="slot_'+id+'"></div>';
- document.getElementById('photoEntries').appendChild(div);
- initSlot('slot_'+id);
+ document.getElementById('photoEntries').appendChild(div);initSlot('slot_'+id);
 }
 function remPhoto(id){delete imageStore['slot_'+id];document.getElementById(id).remove()}
-function initSlot(slotId){
- var s=document.getElementById(slotId);if(!s)return;
- s.innerHTML='<div style="color:#aaa;font-size:11px;padding:15px">Clique para selecionar imagem</div><img style="display:none"><button class="btn-clear" onclick="clrImg(\''+slotId+'\')" title="Remover">X</button><input type="file" accept="image/*" onchange="handleImg(\''+slotId+'\',this)"><br><button class="btn-choose" onclick="document.querySelector(\'#'+slotId+' input[type=file]\').click()">Escolher imagem</button>';
+function initSlot(sid){
+ var s=document.getElementById(sid);if(!s)return;
+ s.innerHTML='<div style="color:#aaa;font-size:11px;padding:15px">Clique para selecionar imagem</div><img style="display:none"><button class="btn-clear" onclick="clrImg(\''+sid+'\')" title="Remover">X</button><input type="file" accept="image/*" onchange="handleImg(\''+sid+'\',this)"><br><button class="btn-choose" onclick="document.querySelector(\'#'+sid+' input[type=file]\').click()">Escolher imagem</button>';
 }
 function handleImg(sid,inp){
  if(!inp.files||!inp.files[0])return;var file=inp.files[0];var s=document.getElementById(sid);
  var r=new FileReader();r.onload=function(e){
-  var img=s.querySelector('img');img.src=e.target.result;img.style.display='block';
+  s.querySelector('img').src=e.target.result;s.querySelector('img').style.display='block';
   s.querySelector('div').style.display='none';s.classList.add('has-image');
   var r2=new FileReader();r2.onload=function(ev){
    var tmp=new Image();tmp.onload=function(){imageStore[sid]={data:ev.target.result,w:tmp.naturalWidth,h:tmp.naturalHeight}};tmp.src=e.target.result;
@@ -478,146 +582,67 @@ function clrImg(sid){var s=document.getElementById(sid);s.querySelector('img').s
 ].forEach(function(p){addPhoto(p)});
 
 // ========== CANVAS TO ARRAYBUFFER ==========
-function canvasToAB(canvas){
- var url=canvas.toDataURL('image/png');
- var bin=atob(url.split(',')[1]);
- var buf=new ArrayBuffer(bin.length);var view=new Uint8Array(buf);
- for(var i=0;i<bin.length;i++)view[i]=bin.charCodeAt(i);
- return buf;
-}
+function canvasToAB(cv){var url=cv.toDataURL('image/png');var b=atob(url.split(',')[1]);var buf=new ArrayBuffer(b.length);var v=new Uint8Array(buf);for(var i=0;i<b.length;i++)v[i]=b.charCodeAt(i);return buf}
 
 // ========== GERAR WORD ==========
 function gerarWord(){
  var btn=document.getElementById('btnDl');btn.disabled=true;btn.textContent='Gerando...';
  try{
-  var D=docx;
-  var mes=document.getElementById('mesRef').value;
-  var ano=document.getElementById('anoRef').value;
-  var rev=document.getElementById('revRef').value;
-  var mesC=mes.charAt(0).toUpperCase()+mes.slice(1);
+  var D=docx;var mesIdx=mesAtivo;var ano=document.getElementById('anoRef').value;
+  var rev=document.getElementById('revRef').value;var mesC=MESES_CAP[mesIdx];
   var GREEN="005A32",WHITE="FFFFFF";
-
   function heading(t){return new D.Paragraph({spacing:{before:300,after:150},children:[new D.TextRun({text:t,bold:true,size:30,color:GREEN,font:"Calibri"})]})}
   function para(t){return new D.Paragraph({spacing:{after:120},alignment:D.AlignmentType.JUSTIFIED,children:[new D.TextRun({text:t,size:20,font:"Calibri"})]})}
-  function chartImg(canvasId,w){
-   var cv=document.getElementById(canvasId);if(!cv)return null;
-   var ab=canvasToAB(cv);var ratio=cv.height/cv.width;var wd=w||580;var ht=Math.round(wd*ratio);
-   return new D.Paragraph({spacing:{after:120},alignment:D.AlignmentType.CENTER,children:[new D.ImageRun({data:ab,transformation:{width:wd,height:ht}})]});
-  }
-  function photoImg(sid,w){
-   var d=imageStore[sid];if(!d)return null;
-   var wd=w||480;var ht=Math.round(wd*(d.h/d.w));
-   return new D.Paragraph({spacing:{after:120},alignment:D.AlignmentType.CENTER,children:[new D.ImageRun({data:d.data,transformation:{width:wd,height:ht}})]});
-  }
+  function chartImg(cid,w){var cv=document.getElementById(cid);if(!cv)return null;var ab=canvasToAB(cv);var r=cv.height/cv.width;return new D.Paragraph({spacing:{after:120},alignment:D.AlignmentType.CENTER,children:[new D.ImageRun({data:ab,transformation:{width:w||580,height:Math.round((w||580)*r)}})]})}
+  function photoImg(sid,w){var d=imageStore[sid];if(!d)return null;var wd=w||480;return new D.Paragraph({spacing:{after:120},alignment:D.AlignmentType.CENTER,children:[new D.ImageRun({data:d.data,transformation:{width:wd,height:Math.round(wd*(d.h/d.w))}})]})}
   function hc(t,o){var opts={shading:{type:D.ShadingType.SOLID,color:GREEN},verticalAlign:D.VerticalAlign.CENTER,children:[new D.Paragraph({alignment:D.AlignmentType.CENTER,children:[new D.TextRun({text:t,bold:true,size:14,color:WHITE,font:"Calibri"})]})]};if(o&&o.rowSpan)opts.rowSpan=o.rowSpan;if(o&&o.columnSpan)opts.columnSpan=o.columnSpan;return new D.TableCell(opts)}
   function dc(t,b,a){return new D.TableCell({verticalAlign:D.VerticalAlign.CENTER,children:[new D.Paragraph({alignment:a||D.AlignmentType.CENTER,children:[new D.TextRun({text:t,bold:!!b,size:14,font:"Calibri"})]})]})}
 
-  // Collect texts
   var st=[];for(var i=1;i<=11;i++)st.push(document.getElementById('sum_p'+i).value);
-  var segI=document.getElementById('seg_intro').value;
-  var portI=document.getElementById('port_intro').value;
-  var fisT=document.getElementById('fisico_texto').value;
-  var finT=document.getElementById('financeiro_texto').value;
-  var projI=document.getElementById('proj_intro').value;
-
-  // Build safety table for Word
+  // Safety table
   var segRows=[new D.TableRow({children:[hc('Seguridad y Medio Ambiente'),hc('Meta'),hc('Ano (cc)')]})];
   var segTbl=document.getElementById('tblSeg');
-  for(var r=1;r<segTbl.rows.length;r++){
-   var cells=segTbl.rows[r].cells;
-   segRows.push(new D.TableRow({children:[dc(cells[0].textContent,false,D.AlignmentType.LEFT),dc(cells[1].querySelector('input').value),dc(cells[2].querySelector('input').value)]}));
-  }
-  var segTable=new D.Table({width:{size:100,type:D.WidthType.PERCENTAGE},rows:segRows});
-
-  // Build KPI table for Word
+  for(var r=1;r<segTbl.rows.length;r++){var cells=segTbl.rows[r].cells;segRows.push(new D.TableRow({children:[dc(cells[0].textContent,false,D.AlignmentType.LEFT),dc(cells[1].querySelector('input').value),dc(cells[2].querySelector('input').value)]}))}
+  // KPI table
   var kpiRows=[new D.TableRow({children:[hc('Portafolio Proyectos'),hc('Meta'),hc('Mes'),hc('Ano (acc)')]})];
   var kpiTbl=document.getElementById('tblKpi');
-  for(var r=1;r<kpiTbl.rows.length;r++){
-   var cells=kpiTbl.rows[r].cells;
-   var inps=[];cells[0].querySelectorAll('input').forEach(function(x){inps.push(x)});
-   // first cell is text, rest are inputs
-   kpiRows.push(new D.TableRow({children:[
-    dc(cells[0].textContent.trim(),false,D.AlignmentType.LEFT),
-    dc(cells[1].querySelector('input').value),
-    dc(cells[2].querySelector('input').value),
-    dc(cells[3].querySelector('input').value)
-   ]}));
-  }
-  var kpiTable=new D.Table({width:{size:100,type:D.WidthType.PERCENTAGE},rows:kpiRows});
+  for(var r=1;r<kpiTbl.rows.length;r++){var cells=kpiTbl.rows[r].cells;kpiRows.push(new D.TableRow({children:[dc(cells[0].textContent.trim(),false,D.AlignmentType.LEFT),dc(cells[1].querySelector('input').value),dc(cells[2].querySelector('input').value),dc(cells[3].querySelector('input').value)]}))}
+  // Projects table
+  var pRows=[new D.TableRow({tableHeader:true,children:[hc('Projeto',{rowSpan:2}),hc('Status Fisico',{columnSpan:4}),hc('Status Financeiro (USD)',{columnSpan:3})]}),new D.TableRow({tableHeader:true,children:[hc('Status'),hc('% Prev.'),hc('% Real'),hc('% Desv.'),hc('Valor Total'),hc('Real+RF'),hc('Carry Over')]})];
+  document.querySelectorAll('#projectBody tr').forEach(function(row){var inp=row.querySelectorAll('input');var sel=row.querySelector('select');pRows.push(new D.TableRow({children:[dc(inp[0].value,false,D.AlignmentType.LEFT),dc(sel.value,true),dc(inp[1].value),dc(inp[2].value),dc(inp[3].value),dc(inp[4].value),dc(inp[5].value),dc(inp[6].value)]}))});
 
-  // Build projects table for Word
-  var pRows=[
-   new D.TableRow({tableHeader:true,children:[hc('Projeto',{rowSpan:2}),hc('Status Fisico',{columnSpan:4}),hc('Status Financeiro (USD)',{columnSpan:3})]}),
-   new D.TableRow({tableHeader:true,children:[hc('Status'),hc('% Prev.'),hc('% Real'),hc('% Desv.'),hc('Valor Total'),hc('Real+RF'),hc('Carry Over')]})
-  ];
-  document.querySelectorAll('#projectBody tr').forEach(function(row){
-   var inp=row.querySelectorAll('input');var sel=row.querySelector('select');
-   pRows.push(new D.TableRow({children:[dc(inp[0].value,false,D.AlignmentType.LEFT),dc(sel.value,true),dc(inp[1].value),dc(inp[2].value),dc(inp[3].value),dc(inp[4].value),dc(inp[5].value),dc(inp[6].value)]}));
-  });
-  var projTable=new D.Table({width:{size:100,type:D.WidthType.PERCENTAGE},rows:pRows});
-
-  // Assemble document
   var ch=[];
   ch.push(heading("Sumário Executivo"));
-  ch.push(para("Apresentamos o resumo das atividades relacionadas aos projetos CAPEX sob gestão da área de engenharia da Unidade Guaíba, referente ao mês de "+mes+" de "+ano+"."));
+  ch.push(para("Apresentamos o resumo das atividades relacionadas aos projetos CAPEX sob gestão da área de engenharia da Unidade Guaíba, referente ao mês de "+MESES_FULL[mesIdx]+" de "+ano+"."));
   st.forEach(function(t){if(t.trim())ch.push(para(t))});
-
   ch.push(heading("Segurança e meio ambiente"));
-  ch.push(para(segI));
-  ch.push(segTable);
+  ch.push(para(document.getElementById('seg_intro').value));
+  ch.push(new D.Table({width:{size:100,type:D.WidthType.PERCENTAGE},rows:segRows}));
   ch.push(new D.Paragraph({spacing:{after:60},children:[]}));
-  var ci=chartImg('chartHht',560);if(ci)ch.push(ci);
+  var ci;ci=chartImg('chartHht',560);if(ci)ch.push(ci);
   ci=chartImg('chartHist',560);if(ci)ch.push(ci);
-
   ch.push(heading("Portfólio de Projetos"));
-  ch.push(para(portI));
-  ci=chartImg('chartStatus',260);if(ci)ch.push(ci);
-  ci=chartImg('chartOrigen',260);if(ci)ch.push(ci);
-  ci=chartImg('chartGestion',260);if(ci)ch.push(ci);
-  ci=chartImg('chartNaturaleza',260);if(ci)ch.push(ci);
-  ch.push(kpiTable);
-
+  ch.push(para(document.getElementById('port_intro').value));
+  ci=chartImg('chartStatus',280);if(ci)ch.push(ci);
+  ci=chartImg('chartOrigen',280);if(ci)ch.push(ci);
+  ci=chartImg('chartGestion',280);if(ci)ch.push(ci);
+  ci=chartImg('chartNaturaleza',280);if(ci)ch.push(ci);
+  ch.push(new D.Table({width:{size:100,type:D.WidthType.PERCENTAGE},rows:kpiRows}));
   ch.push(heading("Visão Física"));
-  ch.push(para(fisT));
+  ch.push(para(document.getElementById('fisico_texto').value));
   ci=chartImg('chartFisico',580);if(ci)ch.push(ci);
-
   ch.push(heading("Visão Financeira"));
-  ch.push(para(finT));
+  ch.push(para(document.getElementById('financeiro_texto').value));
   ci=chartImg('chartFinanceiro',580);if(ci)ch.push(ci);
-
   ch.push(heading("Principais projetos"));
-  ch.push(para(projI));
+  ch.push(para(document.getElementById('proj_intro').value));
   ch.push(new D.Paragraph({spacing:{after:80},children:[]}));
-  ch.push(projTable);
-
-  // Photos
+  ch.push(new D.Table({width:{size:100,type:D.WidthType.PERCENTAGE},rows:pRows}));
   var pes=document.querySelectorAll('.photo-entry');
-  if(pes.length>0){
-   ch.push(heading("Registros fotográficos"));
-   pes.forEach(function(e){
-    var t=e.querySelector('.ph-t').value,l=e.querySelector('.ph-c').value,sid=e.querySelector('.img-slot').id;
-    if(t.trim()){
-     ch.push(new D.Paragraph({spacing:{before:200,after:60},children:[new D.TextRun({text:t,bold:true,size:18,font:"Calibri"})]}));
-     if(l.trim())ch.push(new D.Paragraph({spacing:{after:60},children:[new D.TextRun({text:l,size:16,font:"Calibri",italics:true})]}));
-     var pi=photoImg(sid,460);if(pi)ch.push(pi);
-    }
-   });
-  }
+  if(pes.length>0){ch.push(heading("Registros fotográficos"));pes.forEach(function(e){var t=e.querySelector('.ph-t').value,l=e.querySelector('.ph-c').value,sid=e.querySelector('.img-slot').id;if(t.trim()){ch.push(new D.Paragraph({spacing:{before:200,after:60},children:[new D.TextRun({text:t,bold:true,size:18,font:"Calibri"})]}));if(l.trim())ch.push(new D.Paragraph({spacing:{after:60},children:[new D.TextRun({text:l,size:16,font:"Calibri",italics:true})]}));var pi=photoImg(sid,460);if(pi)ch.push(pi)}})}
 
-  var doc=new D.Document({
-   styles:{default:{document:{run:{font:"Calibri",size:20}}}},
-   sections:[{
-    properties:{page:{margin:{top:1440,right:1080,bottom:1440,left:1080}}},
-    headers:{default:new D.Header({children:[new D.Paragraph({alignment:D.AlignmentType.RIGHT,children:[new D.TextRun({text:"Engenharia - Sumário Executivo Guaíba - "+mesC+"/"+ano,size:16,color:"888888",font:"Calibri"})]})]})},
-    footers:{default:new D.Footer({children:[new D.Paragraph({alignment:D.AlignmentType.CENTER,children:[new D.TextRun({text:"CMPC - Unidade Guaíba | ",size:14,color:"888888",font:"Calibri"}),new D.TextRun({children:[D.PageNumber.CURRENT],size:14,color:"888888",font:"Calibri"})]})]})},
-    children:ch
-   }]
-  });
-
-  D.Packer.toBlob(doc).then(function(blob){
-   saveAs(blob,"Engenharia_Sumario Executivo Guaiba_"+mesC+"_"+ano+"_rev"+rev+".docx");
-   btn.disabled=false;btn.textContent='Baixar Word';
-  }).catch(function(err){alert('Erro ao gerar: '+err.message);console.error(err);btn.disabled=false;btn.textContent='Baixar Word'});
+  var doc=new D.Document({styles:{default:{document:{run:{font:"Calibri",size:20}}}},sections:[{properties:{page:{margin:{top:1440,right:1080,bottom:1440,left:1080}}},headers:{default:new D.Header({children:[new D.Paragraph({alignment:D.AlignmentType.RIGHT,children:[new D.TextRun({text:"Engenharia - Sumário Executivo Guaíba - "+mesC+"/"+ano,size:16,color:"888888",font:"Calibri"})]})]})},footers:{default:new D.Footer({children:[new D.Paragraph({alignment:D.AlignmentType.CENTER,children:[new D.TextRun({text:"CMPC - Unidade Guaíba | ",size:14,color:"888888",font:"Calibri"}),new D.TextRun({children:[D.PageNumber.CURRENT],size:14,color:"888888",font:"Calibri"})]})]})},children:ch}]});
+  D.Packer.toBlob(doc).then(function(blob){saveAs(blob,"Engenharia_Sumario Executivo Guaiba_"+mesC+"_"+ano+"_rev"+rev+".docx");btn.disabled=false;btn.textContent='Baixar Word'}).catch(function(err){alert('Erro: '+err.message);console.error(err);btn.disabled=false;btn.textContent='Baixar Word'});
  }catch(err){alert('Erro: '+err.message);console.error(err);btn.disabled=false;btn.textContent='Baixar Word'}
 }
 </script>
