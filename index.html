@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editor - Sumário Executivo Guaíba</title>
-    <script src="https://unpkg.com/docx@8.5.0/build/index.min.js"></script>
+    <script src="https://unpkg.com/docx@8.5.0/build/index.umd.js"></script>
     <script src="https://unpkg.com/file-saver@2.0.5/dist/FileSaver.min.js"></script>
     <style>
         :root {
@@ -15,237 +15,63 @@
             --bg: #f5f5f5;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: 'Segoe UI', Tahoma, sans-serif;
-            background: var(--bg);
-            color: #333;
-            padding: 20px;
-        }
-        .container {
-            max-width: 1100px;
-            margin: 0 auto;
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.1);
-            padding: 30px;
-        }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 3px solid var(--cmpc-green);
-            padding-bottom: 15px;
-            margin-bottom: 25px;
-        }
-        .header h1 {
-            color: var(--cmpc-green);
-            font-size: 24px;
-        }
-        .header-controls {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-        .header-controls select, .header-controls input {
-            padding: 6px 10px;
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            font-size: 14px;
-        }
-        .btn-download {
-            background: var(--cmpc-green);
-            color: #fff;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 6px;
-            font-size: 16px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background 0.2s;
-        }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); color: #333; padding: 20px; }
+        .container { max-width: 1100px; margin: 0 auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 12px rgba(0,0,0,0.1); padding: 30px; }
+        .btn-download { background: var(--cmpc-green); color: #fff; border: none; padding: 12px 24px; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: bold; transition: background 0.2s; }
         .btn-download:hover { background: var(--cmpc-dark); }
-        .section {
-            margin-bottom: 30px;
-            border: 1px solid #e0e0e0;
-            border-radius: 6px;
-            overflow: hidden;
-        }
-        .section-title {
-            background: var(--cmpc-green);
-            color: #fff;
-            padding: 10px 15px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            user-select: none;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .section-title::after {
-            content: '▼';
-            font-size: 12px;
-            transition: transform 0.2s;
-        }
-        .section-title.collapsed::after {
-            transform: rotate(-90deg);
-        }
-        .section-body {
-            padding: 15px;
-        }
+        .btn-download:disabled { background: #999; cursor: wait; }
+        .section { margin-bottom: 30px; border: 1px solid #e0e0e0; border-radius: 6px; overflow: hidden; }
+        .section-title { background: var(--cmpc-green); color: #fff; padding: 10px 15px; font-size: 16px; font-weight: bold; cursor: pointer; user-select: none; display: flex; justify-content: space-between; align-items: center; }
+        .section-title::after { content: '\25BC'; font-size: 12px; transition: transform 0.2s; }
+        .section-title.collapsed::after { transform: rotate(-90deg); }
+        .section-body { padding: 15px; }
         .section-body.hidden { display: none; }
-        .field-group {
-            margin-bottom: 15px;
-        }
-        .field-group label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 4px;
-            color: #555;
-            font-size: 13px;
-        }
-        .field-group textarea {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            font-size: 13px;
-            font-family: inherit;
-            resize: vertical;
-            min-height: 60px;
-            line-height: 1.5;
-        }
-        .field-group input[type="text"],
-        .field-group input[type="number"] {
-            padding: 6px 10px;
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            font-size: 13px;
-            width: 100%;
-        }
-        .field-row {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-        .field-row .field-group {
-            flex: 1;
-            min-width: 150px;
-        }
-        .project-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 12px;
-        }
-        .project-table th {
-            background: var(--cmpc-green);
-            color: #fff;
-            padding: 8px 6px;
-            text-align: center;
-            font-size: 11px;
-            border: 1px solid #004d2a;
-        }
-        .project-table td {
-            padding: 5px 6px;
-            border: 1px solid #ddd;
-            text-align: center;
-        }
-        .project-table td:first-child {
-            text-align: left;
-            min-width: 200px;
-        }
-        .project-table td input {
-            width: 100%;
-            border: 1px solid transparent;
-            padding: 3px 4px;
-            font-size: 12px;
-            text-align: center;
-            background: transparent;
-            transition: border-color 0.2s;
-        }
-        .project-table td:first-child input {
-            text-align: left;
-        }
-        .project-table td input:hover,
-        .project-table td input:focus {
-            border-color: var(--cmpc-green);
-            background: #fff;
-            outline: none;
-        }
-        .project-table td select {
-            width: 100%;
-            border: 1px solid transparent;
-            padding: 3px;
-            font-size: 12px;
-            background: transparent;
-            cursor: pointer;
-        }
-        .project-table td select:hover,
-        .project-table td select:focus {
-            border-color: var(--cmpc-green);
-            background: #fff;
-        }
+        .field-group { margin-bottom: 15px; }
+        .field-group label { display: block; font-weight: 600; margin-bottom: 4px; color: #555; font-size: 13px; }
+        .field-group textarea { width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; font-family: inherit; resize: vertical; min-height: 60px; line-height: 1.5; }
+        .field-group input[type="text"], .field-group input[type="number"] { padding: 6px 10px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; width: 100%; }
+        .field-row { display: flex; gap: 15px; flex-wrap: wrap; }
+        .field-row .field-group { flex: 1; min-width: 150px; }
+        .project-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        .project-table th { background: var(--cmpc-green); color: #fff; padding: 8px 6px; text-align: center; font-size: 11px; border: 1px solid #004d2a; }
+        .project-table td { padding: 5px 6px; border: 1px solid #ddd; text-align: center; }
+        .project-table td:first-child { text-align: left; min-width: 200px; }
+        .project-table td input { width: 100%; border: 1px solid transparent; padding: 3px 4px; font-size: 12px; text-align: center; background: transparent; }
+        .project-table td:first-child input { text-align: left; }
+        .project-table td input:hover, .project-table td input:focus { border-color: var(--cmpc-green); background: #fff; outline: none; }
+        .project-table td select { width: 100%; border: 1px solid transparent; padding: 3px; font-size: 12px; background: transparent; cursor: pointer; }
+        .project-table td select:hover, .project-table td select:focus { border-color: var(--cmpc-green); background: #fff; }
         .project-table tr:nth-child(even) { background: #f9f9f9; }
         .project-table tr:hover { background: var(--cmpc-light); }
-        .table-actions {
-            margin-top: 10px;
-            display: flex;
-            gap: 10px;
-        }
-        .btn-add {
-            background: var(--cmpc-green);
-            color: #fff;
-            border: none;
-            padding: 6px 14px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 13px;
-        }
+        .btn-add { background: var(--cmpc-green); color: #fff; border: none; padding: 6px 14px; border-radius: 4px; cursor: pointer; font-size: 13px; }
         .btn-add:hover { background: var(--cmpc-dark); }
-        .btn-remove {
-            background: #dc3545;
-            color: #fff;
-            border: none;
-            padding: 2px 8px;
-            border-radius: 3px;
-            cursor: pointer;
-            font-size: 11px;
-        }
+        .btn-remove { background: #dc3545; color: #fff; border: none; padding: 2px 8px; border-radius: 3px; cursor: pointer; font-size: 11px; }
         .btn-remove:hover { background: #a71d2a; }
-        .inline-fields {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            gap: 10px;
-        }
-        .inline-fields .field-group { margin-bottom: 5px; }
-        .status-atrasado { color: #dc3545; font-weight: bold; }
-        .status-noprazo { color: #28a745; font-weight: bold; }
-        .download-bar {
-            position: sticky;
-            top: 0;
-            background: #fff;
-            padding: 12px 0;
-            border-bottom: 2px solid var(--cmpc-green);
-            z-index: 100;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        .rev-input {
-            width: 60px;
-        }
+        .download-bar { position: sticky; top: 0; background: #fff; padding: 12px 0; border-bottom: 2px solid var(--cmpc-green); z-index: 100; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .img-upload-area { display: flex; gap: 15px; flex-wrap: wrap; margin-top: 10px; }
+        .img-slot { border: 2px dashed #ccc; border-radius: 6px; padding: 10px; text-align: center; min-width: 200px; flex: 1; position: relative; background: #fafafa; }
+        .img-slot.has-image { border-color: var(--cmpc-green); border-style: solid; }
+        .img-slot img { max-width: 100%; max-height: 200px; border-radius: 4px; }
+        .img-slot .img-label { font-size: 12px; font-weight: 600; color: #555; margin-bottom: 6px; }
+        .img-slot .img-placeholder { color: #aaa; font-size: 12px; padding: 30px 10px; }
+        .img-slot input[type="file"] { display: none; }
+        .img-slot .btn-choose { background: var(--cmpc-green); color: #fff; border: none; padding: 5px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; margin-top: 6px; }
+        .img-slot .btn-choose:hover { background: var(--cmpc-dark); }
+        .img-slot .btn-clear { position: absolute; top: 5px; right: 5px; background: #dc3545; color: #fff; border: none; width: 20px; height: 20px; border-radius: 50%; cursor: pointer; font-size: 11px; line-height: 20px; display: none; }
+        .img-slot.has-image .btn-clear { display: block; }
+        .photo-entry { border: 1px solid #e0e0e0; border-radius: 6px; padding: 12px; margin-bottom: 12px; background: #fafafa; }
+        .photo-entry .field-row { align-items: end; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="download-bar">
-            <div style="display:flex; gap:15px; align-items:center;">
-                <span style="font-weight:bold; color:var(--cmpc-green); font-size:18px;">Sumário Executivo - Guaíba</span>
+            <div style="display:flex; gap:15px; align-items:center; flex-wrap:wrap;">
+                <span style="font-weight:bold; color:var(--cmpc-green); font-size:18px;">Sumario Executivo - Guaiba</span>
                 <select id="mesRef">
                     <option value="janeiro">Janeiro</option>
                     <option value="fevereiro">Fevereiro</option>
-                    <option value="março">Março</option>
+                    <option value="marco">Marco</option>
                     <option value="abril">Abril</option>
                     <option value="maio" selected>Maio</option>
                     <option value="junho">Junho</option>
@@ -258,102 +84,123 @@
                 </select>
                 <input type="number" id="anoRef" value="2026" style="width:80px;" />
                 <label style="font-size:13px; color:#555;">Rev:</label>
-                <input type="text" id="revRef" value="01" class="rev-input" style="width:50px;" />
+                <input type="text" id="revRef" value="01" style="width:50px;" />
             </div>
-            <button class="btn-download" onclick="gerarWord()">&#128196; Baixar Word</button>
+            <button class="btn-download" id="btnDownload" onclick="gerarWord()">Baixar Word</button>
         </div>
 
-        <!-- SUMÁRIO EXECUTIVO -->
+        <!-- SUMARIO EXECUTIVO -->
         <div class="section">
-            <div class="section-title" onclick="toggleSection(this)">Sumário Executivo</div>
+            <div class="section-title" onclick="toggleSection(this)">Sumario Executivo</div>
             <div class="section-body">
                 <div class="field-group">
-                    <label>Parágrafo 1 - Visão geral do portfólio</label>
+                    <label>Paragrafo 1 - Visao geral do portfolio</label>
                     <textarea id="sum_p1" rows="3">No portfólio anual temos 53 projetos aprovados, 9 projetos pendentes aprovação, 3 projetos postergados, 2 projetos normais cancelados e 1 projeto encerrado.</textarea>
                 </div>
                 <div class="field-group">
-                    <label>Parágrafo 2 - Avanço físico</label>
+                    <label>Paragrafo 2 - Avanco fisico</label>
                     <textarea id="sum_p2" rows="3">Em relação ao avanço físico do período, acumulamos 53,4% de execução com desvio de -4,6% em relação as atividades planejadas (58,0%). O desvio se dá principalmente pelos projetos: DEFAPA – Condições de Segurança e Construção de nova sala de operadores.</textarea>
                 </div>
                 <div class="field-group">
-                    <label>Parágrafo 3 - Planejamento financeiro</label>
+                    <label>Paragrafo 3 - Planejamento financeiro</label>
                     <textarea id="sum_p3" rows="3">Com relação ao planejamento financeiro, o desembolso projetado (Forecast) para o ano é de 11.89 MMUSD em relação a nova linha de base do ano de 11.90 MMUSD. O acumulado do mês de maio foi de 4.85 MMUSD em relação ao valor previsto de 6.55 MMUSD para o período.</textarea>
                 </div>
                 <div class="field-group">
-                    <label>Parágrafo 4 - Solicitações de Mudança</label>
+                    <label>Paragrafo 4 - Solicitacoes de Mudanca</label>
                     <textarea id="sum_p4" rows="3">No mês de maio foram registradas duas Solicitações de Mudança (SM) no portfólio referente aos projetos de NR-12 e Instalação de estrutura para movimentação de carga.</textarea>
                 </div>
                 <div class="field-group">
-                    <label>Parágrafo 5 - Detalhamento SM 1</label>
+                    <label>Paragrafo 5 - Detalhamento SM 1</label>
                     <textarea id="sum_p5" rows="3">O projeto NR-12 teve seu planejamento alterado devido a saída da empresa de contrato de montagem vigente, sendo necessária uma nova contratação, alterando assim o prazo final de montagem do escopo mecânico.</textarea>
                 </div>
                 <div class="field-group">
-                    <label>Parágrafo 6 - Detalhamento SM 2</label>
+                    <label>Paragrafo 6 - Detalhamento SM 2</label>
                     <textarea id="sum_p6" rows="3">No que diz respeito ao projeto de Instalação de estrutura para movimentação de carga a mudança se deu pelo declínio da empresa contratada ao escopo de montagem, sendo necessária duas novas contratações (mecânica e elétrica).</textarea>
                 </div>
                 <div class="field-group">
-                    <label>Parágrafo 7 - Segurança e meio ambiente</label>
+                    <label>Paragrafo 7 - Seguranca e meio ambiente</label>
                     <textarea id="sum_p7" rows="2">Quanto à segurança e meio ambiente, tivemos um pico de efetivo de 173 pessoas, não houve registro de ocorrência, totalizando 33,5 mil horas trabalhadas no período.</textarea>
                 </div>
                 <div class="field-group">
-                    <label>Parágrafo 8 - REVAMP UG1</label>
+                    <label>Paragrafo 8 - REVAMP UG1</label>
                     <textarea id="sum_p8" rows="4">No projeto REVAMP UG1, atingimos o avanço físico real de 97,9% sendo um desvio de -0,9% em relação ao planejado (98,8%), as variações se referem ao atraso na execução de pendências relacionadas a PG, sem impactos operativos. Em relação ao orçamento total aprovado do projeto: 137,5 MMUSD, totalizamos o pagamento de 119,4 MMUSD e compromisso de 14,0 MMUSD, totalizando entre o realizado e compromissado 97,0% do valor total do projeto.</textarea>
                 </div>
                 <div class="field-group">
-                    <label>Parágrafo 9 - Carteira REVAMP</label>
+                    <label>Paragrafo 9 - Carteira REVAMP</label>
                     <textarea id="sum_p9" rows="2">Em abril, a carteira do REVAMP, totalizou 132 projetos. Desses, 16 encontram-se em andamento por lista de pendências e 113 já encerrados, havendo 3 projetos em fase de aprovação para o período.</textarea>
                 </div>
                 <div class="field-group">
-                    <label>Parágrafo 10 - Central de resíduos Santa Izabel</label>
+                    <label>Paragrafo 10 - Central de residuos Santa Izabel</label>
                     <textarea id="sum_p10" rows="2">No projeto Central de resíduos Santa Izabel, atingimos o avanço físico real de 40,24% sendo um desvio positivo de +4,72% em relação ao planejado (35,51%).</textarea>
                 </div>
                 <div class="field-group">
-                    <label>Parágrafo 11 - Casa de Crianzas (Instituto CMPC)</label>
+                    <label>Paragrafo 11 - Casa de Crianzas (Instituto CMPC)</label>
                     <textarea id="sum_p11" rows="2">No projeto Casa de Crianzas (Instituto CMPC), atingimos o avanço físico real de 30,10% com um desvio de -0,6% em relação ao planejado (30,7%).</textarea>
                 </div>
             </div>
         </div>
 
-        <!-- SEGURANÇA E MEIO AMBIENTE -->
+        <!-- SEGURANCA E MEIO AMBIENTE -->
         <div class="section">
-            <div class="section-title" onclick="toggleSection(this)">Segurança e Meio Ambiente</div>
+            <div class="section-title" onclick="toggleSection(this)">Seguranca e Meio Ambiente</div>
             <div class="section-body">
                 <div class="field-group">
-                    <label>Texto introdutório</label>
+                    <label>Texto introdutorio</label>
                     <textarea id="seg_intro" rows="2">O efetivo máximo no período totalizou 173 pessoas, com 33,5 mil horas trabalhadas mês.</textarea>
                 </div>
-            </div>
-        </div>
-
-        <!-- PORTFÓLIO DE PROJETOS -->
-        <div class="section">
-            <div class="section-title" onclick="toggleSection(this)">Portfólio de Projetos</div>
-            <div class="section-body">
-                <div class="field-group">
-                    <label>Texto introdutório</label>
-                    <textarea id="port_intro" rows="1">Abaixo a visão geral da carteira de projetos.</textarea>
+                <div class="img-upload-area">
+                    <div class="img-slot" id="slot_seg1"></div>
+                    <div class="img-slot" id="slot_seg2"></div>
+                </div>
+                <div class="img-upload-area">
+                    <div class="img-slot" id="slot_seg3"></div>
+                    <div class="img-slot" id="slot_seg4"></div>
                 </div>
             </div>
         </div>
 
-        <!-- VISÃO FÍSICA -->
+        <!-- PORTFOLIO DE PROJETOS -->
         <div class="section">
-            <div class="section-title" onclick="toggleSection(this)">Visão Física</div>
+            <div class="section-title" onclick="toggleSection(this)">Portfolio de Projetos</div>
+            <div class="section-body">
+                <div class="field-group">
+                    <label>Texto introdutorio</label>
+                    <textarea id="port_intro" rows="1">Abaixo a visão geral da carteira de projetos.</textarea>
+                </div>
+                <div class="img-upload-area">
+                    <div class="img-slot" id="slot_port1"></div>
+                    <div class="img-slot" id="slot_port2"></div>
+                </div>
+                <div class="img-upload-area" style="margin-top:0;">
+                    <div class="img-slot" id="slot_port3"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VISAO FISICA -->
+        <div class="section">
+            <div class="section-title" onclick="toggleSection(this)">Visao Fisica</div>
             <div class="section-body">
                 <div class="field-group">
                     <label>Texto descritivo</label>
                     <textarea id="fisico_texto" rows="2">A curva abaixo apresenta o planejamento do % previsto para os projetos aprovados no orçamento anual. Acumulamos 53,4% de execução com desvio de -4,6% em relação as atividades planejadas (58,0%).</textarea>
                 </div>
+                <div class="img-upload-area">
+                    <div class="img-slot" id="slot_fisico"></div>
+                </div>
             </div>
         </div>
 
-        <!-- VISÃO FINANCEIRA -->
+        <!-- VISAO FINANCEIRA -->
         <div class="section">
-            <div class="section-title" onclick="toggleSection(this)">Visão Financeira</div>
+            <div class="section-title" onclick="toggleSection(this)">Visao Financeira</div>
             <div class="section-body">
                 <div class="field-group">
                     <label>Texto descritivo</label>
                     <textarea id="financeiro_texto" rows="3">A curva abaixo apresenta a previsão de desembolso dos projetos para o ano totalizando 11,9USDM. A diferença apresentada em dezembro diz respeito postergação e cancelamento dos seguintes projetos: Linha de warm up CR2, nova linha de vapor de média da DEFAPA e Novo sistema de trasnfêrencia de Cl02. O desembolso realizado em maio foi de USDM 4.85.</textarea>
+                </div>
+                <div class="img-upload-area">
+                    <div class="img-slot" id="slot_financeiro"></div>
                 </div>
             </div>
         </div>
@@ -363,7 +210,7 @@
             <div class="section-title" onclick="toggleSection(this)">Principais Projetos</div>
             <div class="section-body">
                 <div class="field-group">
-                    <label>Texto introdutório</label>
+                    <label>Texto introdutorio</label>
                     <textarea id="proj_intro" rows="1">Abaixo a visão física e financeira dos principais projetos aprovados em andamento classificados por valor de orçamento.</textarea>
                 </div>
                 <div style="overflow-x:auto; margin-top:10px;">
@@ -371,7 +218,7 @@
                         <thead>
                             <tr>
                                 <th rowspan="2">Projeto</th>
-                                <th colspan="4">Status Físico do projeto</th>
+                                <th colspan="4">Status Fisico do projeto</th>
                                 <th colspan="3">Status Financeiro no ano (USD)</th>
                                 <th rowspan="2" style="width:40px;"></th>
                             </tr>
@@ -385,23 +232,21 @@
                                 <th>Carry Over / Saving</th>
                             </tr>
                         </thead>
-                        <tbody id="projectBody">
-                        </tbody>
+                        <tbody id="projectBody"></tbody>
                     </table>
                 </div>
-                <div class="table-actions">
+                <div style="margin-top:10px;">
                     <button class="btn-add" onclick="addProjectRow()">+ Adicionar projeto</button>
                 </div>
             </div>
         </div>
 
-        <!-- REGISTROS FOTOGRÁFICOS -->
+        <!-- REGISTROS FOTOGRAFICOS -->
         <div class="section">
-            <div class="section-title" onclick="toggleSection(this)">Registros Fotográficos</div>
+            <div class="section-title" onclick="toggleSection(this)">Registros Fotograficos</div>
             <div class="section-body">
-                <div id="photoEntries">
-                </div>
-                <div class="table-actions">
+                <div id="photoEntries"></div>
+                <div style="margin-top:10px;">
                     <button class="btn-add" onclick="addPhotoEntry()">+ Adicionar registro</button>
                 </div>
             </div>
@@ -409,7 +254,77 @@
     </div>
 
     <script>
-        const initialProjects = [
+        // ==================== IMAGE STORE ====================
+        var imageStore = {};
+
+        function initImageSlot(slotId, label) {
+            var slot = document.getElementById(slotId);
+            if (!slot) return;
+            slot.innerHTML =
+                '<div class="img-label">' + label + '</div>' +
+                '<div class="img-placeholder">Clique para selecionar imagem</div>' +
+                '<img style="display:none;" />' +
+                '<button class="btn-clear" onclick="clearImage(\'' + slotId + '\')" title="Remover">X</button>' +
+                '<input type="file" accept="image/*" onchange="handleImageUpload(\'' + slotId + '\', this)" />' +
+                '<br><button class="btn-choose" onclick="document.querySelector(\'#' + slotId + ' input[type=file]\').click()">Escolher imagem</button>';
+        }
+
+        function handleImageUpload(slotId, input) {
+            if (!input.files || !input.files[0]) return;
+            var file = input.files[0];
+            var slot = document.getElementById(slotId);
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var img = slot.querySelector('img');
+                var placeholder = slot.querySelector('.img-placeholder');
+                img.src = e.target.result;
+                img.style.display = 'block';
+                placeholder.style.display = 'none';
+                slot.classList.add('has-image');
+                var arrayReader = new FileReader();
+                arrayReader.onload = function(ev) {
+                    var tempImg = new Image();
+                    tempImg.onload = function() {
+                        imageStore[slotId] = {
+                            data: ev.target.result,
+                            width: tempImg.naturalWidth,
+                            height: tempImg.naturalHeight,
+                            type: file.type.includes('png') ? 'png' : 'jpg'
+                        };
+                    };
+                    tempImg.src = e.target.result;
+                };
+                arrayReader.readAsArrayBuffer(file);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function clearImage(slotId) {
+            var slot = document.getElementById(slotId);
+            var img = slot.querySelector('img');
+            var placeholder = slot.querySelector('.img-placeholder');
+            var input = slot.querySelector('input[type=file]');
+            img.src = '';
+            img.style.display = 'none';
+            placeholder.style.display = 'block';
+            slot.classList.remove('has-image');
+            input.value = '';
+            delete imageStore[slotId];
+        }
+
+        // Init all fixed image slots
+        initImageSlot('slot_seg1', 'Dados gerais de Seguranca');
+        initImageSlot('slot_seg2', 'Homem-hora total');
+        initImageSlot('slot_seg3', 'Dados de Meio Ambiente');
+        initImageSlot('slot_seg4', 'Histograma mensal');
+        initImageSlot('slot_port1', 'Visao geral carteira');
+        initImageSlot('slot_port2', 'Visao geral carteira 2');
+        initImageSlot('slot_port3', 'Principais Indicadores');
+        initImageSlot('slot_fisico', 'Curva S - Visao Fisica');
+        initImageSlot('slot_financeiro', 'Curva S - Visao Financeira');
+
+        // ==================== PROJECTS TABLE ====================
+        var initialProjects = [
             { nome: "Drenagem Pluvial", status: "Atrasado", prev: "100,00%", real: "99,37%", desv: "-0,63%", valor: "28.327", realrf: "155.944", carry: "-127.617" },
             { nome: "Queima de Hidrogênio Forno de Cal UG1", status: "Atrasado", prev: "93,63%", real: "90,00%", desv: "-3,63%", valor: "25.411", realrf: "13.583", carry: "11.828" },
             { nome: "Defapa - Condições De Segurança Estruturais", status: "Atrasado", prev: "93,14%", real: "85,02%", desv: "-8,12%", valor: "1.422.825", realrf: "1.422.825", carry: "0" },
@@ -429,374 +344,369 @@
             { nome: "Nova rede de esgoto sanitário", status: "Atrasado", prev: "86,50%", real: "84,50%", desv: "-2,00%", valor: "68.694", realrf: "68.694", carry: "0" }
         ];
 
-        const initialPhotos = [
-            { titulo: "Central de Resíduos Horto Santa Izabel", legenda: "Terraplanagem" },
-            { titulo: "Instituto CMPC", legenda: "Concretagem da laje e regularização do concreto finalizados" },
-            { titulo: "Recuperação de Água – Planta de Hidrogênio", legenda: "Comissionamento da linha 4'' e finalização do projeto" },
-            { titulo: "Difusores TB 2 e TB 3", legenda: "Desmontagem e içamento das unidades hidráulicas dos TBS" }
-        ];
-
         function createProjectRow(p) {
-            return `<tr>
-                <td><input type="text" value="${p.nome}" /></td>
-                <td><select>
-                    <option value="No prazo" ${p.status === 'No prazo' ? 'selected' : ''}>No prazo</option>
-                    <option value="Atrasado" ${p.status === 'Atrasado' ? 'selected' : ''}>Atrasado</option>
-                    <option value="Adiantado" ${p.status === 'Adiantado' ? 'selected' : ''}>Adiantado</option>
-                    <option value="Concluído" ${p.status === 'Concluído' ? 'selected' : ''}>Concluído</option>
-                    <option value="Cancelado" ${p.status === 'Cancelado' ? 'selected' : ''}>Cancelado</option>
-                </select></td>
-                <td><input type="text" value="${p.prev}" /></td>
-                <td><input type="text" value="${p.real}" /></td>
-                <td><input type="text" value="${p.desv}" /></td>
-                <td><input type="text" value="${p.valor}" /></td>
-                <td><input type="text" value="${p.realrf}" /></td>
-                <td><input type="text" value="${p.carry}" /></td>
-                <td><button class="btn-remove" onclick="this.closest('tr').remove()">X</button></td>
-            </tr>`;
+            return '<tr>' +
+                '<td><input type="text" value="' + p.nome + '" /></td>' +
+                '<td><select>' +
+                '<option value="No prazo"' + (p.status === 'No prazo' ? ' selected' : '') + '>No prazo</option>' +
+                '<option value="Atrasado"' + (p.status === 'Atrasado' ? ' selected' : '') + '>Atrasado</option>' +
+                '<option value="Adiantado"' + (p.status === 'Adiantado' ? ' selected' : '') + '>Adiantado</option>' +
+                '<option value="Concluido"' + (p.status === 'Concluido' ? ' selected' : '') + '>Concluido</option>' +
+                '<option value="Cancelado"' + (p.status === 'Cancelado' ? ' selected' : '') + '>Cancelado</option>' +
+                '</select></td>' +
+                '<td><input type="text" value="' + p.prev + '" /></td>' +
+                '<td><input type="text" value="' + p.real + '" /></td>' +
+                '<td><input type="text" value="' + p.desv + '" /></td>' +
+                '<td><input type="text" value="' + p.valor + '" /></td>' +
+                '<td><input type="text" value="' + p.realrf + '" /></td>' +
+                '<td><input type="text" value="' + p.carry + '" /></td>' +
+                '<td><button class="btn-remove" onclick="this.closest(\'tr\').remove()">X</button></td>' +
+                '</tr>';
         }
 
         function addProjectRow(p) {
-            const data = p || { nome: "", status: "No prazo", prev: "", real: "", desv: "", valor: "", realrf: "", carry: "0" };
+            var data = p || { nome: "", status: "No prazo", prev: "", real: "", desv: "", valor: "", realrf: "", carry: "0" };
             document.getElementById('projectBody').insertAdjacentHTML('beforeend', createProjectRow(data));
         }
 
-        function createPhotoEntry(p) {
-            const div = document.createElement('div');
-            div.className = 'field-row';
-            div.style.marginBottom = '10px';
-            div.style.alignItems = 'end';
-            div.innerHTML = `
-                <div class="field-group" style="flex:2;">
-                    <label>Título do projeto</label>
-                    <input type="text" class="photo-title" value="${p.titulo}" />
-                </div>
-                <div class="field-group" style="flex:3;">
-                    <label>Legenda</label>
-                    <input type="text" class="photo-caption" value="${p.legenda}" />
-                </div>
-                <div class="field-group" style="flex:0 0 auto;">
-                    <button class="btn-remove" onclick="this.closest('.field-row').remove()" style="margin-bottom:4px;">X</button>
-                </div>
-            `;
-            document.getElementById('photoEntries').appendChild(div);
-        }
+        initialProjects.forEach(function(p) { addProjectRow(p); });
+
+        // ==================== PHOTO ENTRIES ====================
+        var photoCounter = 0;
 
         function addPhotoEntry(p) {
-            createPhotoEntry(p || { titulo: "", legenda: "" });
+            var data = p || { titulo: "", legenda: "" };
+            photoCounter++;
+            var id = 'photo_' + photoCounter;
+            var div = document.createElement('div');
+            div.className = 'photo-entry';
+            div.id = id;
+            div.innerHTML =
+                '<div class="field-row">' +
+                    '<div class="field-group" style="flex:2;">' +
+                        '<label>Titulo do projeto</label>' +
+                        '<input type="text" class="photo-title" value="' + data.titulo + '" />' +
+                    '</div>' +
+                    '<div class="field-group" style="flex:3;">' +
+                        '<label>Legenda</label>' +
+                        '<input type="text" class="photo-caption" value="' + data.legenda + '" />' +
+                    '</div>' +
+                    '<div class="field-group" style="flex:0 0 auto;">' +
+                        '<button class="btn-remove" onclick="removePhotoEntry(\'' + id + '\')" style="margin-bottom:4px;">X</button>' +
+                    '</div>' +
+                '</div>' +
+                '<div class="img-upload-area">' +
+                    '<div class="img-slot" id="slot_' + id + '"></div>' +
+                '</div>';
+            document.getElementById('photoEntries').appendChild(div);
+            initImageSlot('slot_' + id, 'Foto');
         }
+
+        function removePhotoEntry(id) {
+            var el = document.getElementById(id);
+            if (el) {
+                delete imageStore['slot_' + id];
+                el.remove();
+            }
+        }
+
+        var initialPhotos = [
+            { titulo: "Central de Resíduos Horto Santa Izabel", legenda: "Terraplanagem" },
+            { titulo: "Instituto CMPC", legenda: "Concretagem da laje e regularização do concreto finalizados" },
+            { titulo: "Recuperação de Água - Planta de Hidrogênio", legenda: "Comissionamento da linha 4'' e finalização do projeto" },
+            { titulo: "Difusores TB 2 e TB 3", legenda: "Desmontagem e içamento das unidades hidráulicas dos TBS" }
+        ];
+        initialPhotos.forEach(function(p) { addPhotoEntry(p); });
 
         function toggleSection(el) {
             el.classList.toggle('collapsed');
             el.nextElementSibling.classList.toggle('hidden');
         }
 
-        // Initialize
-        initialProjects.forEach(p => addProjectRow(p));
-        initialPhotos.forEach(p => createPhotoEntry(p));
-
-        // ===================== GERAR WORD =====================
+        // ==================== GERAR WORD ====================
         function gerarWord() {
-            const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
-                    WidthType, AlignmentType, BorderStyle, HeadingLevel,
-                    ShadingType, VerticalAlign, TableLayoutType,
-                    Header, Footer, PageNumber, NumberFormat } = docx;
+            var btn = document.getElementById('btnDownload');
+            btn.disabled = true;
+            btn.textContent = 'Gerando...';
 
-            const mes = document.getElementById('mesRef').value;
-            const ano = document.getElementById('anoRef').value;
-            const rev = document.getElementById('revRef').value;
-            const mesCapital = mes.charAt(0).toUpperCase() + mes.slice(1);
+            try {
+                var D = docx;
+                var mes = document.getElementById('mesRef').value;
+                var ano = document.getElementById('anoRef').value;
+                var rev = document.getElementById('revRef').value;
+                var mesCapital = mes.charAt(0).toUpperCase() + mes.slice(1);
 
-            const GREEN = "005A32";
-            const WHITE = "FFFFFF";
-            const BLACK = "000000";
+                var GREEN = "005A32";
+                var WHITE = "FFFFFF";
 
-            function makeHeading(text) {
-                return new Paragraph({
-                    spacing: { before: 300, after: 150 },
-                    children: [
-                        new TextRun({
-                            text: text,
-                            bold: true,
-                            size: 30,
-                            color: GREEN,
-                            font: "Calibri"
-                        })
-                    ]
-                });
-            }
-
-            function makeParagraph(text) {
-                return new Paragraph({
-                    spacing: { after: 120 },
-                    alignment: AlignmentType.JUSTIFIED,
-                    children: [
-                        new TextRun({
-                            text: text,
-                            size: 20,
-                            font: "Calibri"
-                        })
-                    ]
-                });
-            }
-
-            function makeIntro(mes, ano) {
-                return new Paragraph({
-                    spacing: { after: 120 },
-                    alignment: AlignmentType.JUSTIFIED,
-                    children: [
-                        new TextRun({
-                            text: `Apresentamos o resumo das atividades relacionadas aos projetos CAPEX sob gestão da área de engenharia da Unidade Guaíba, referente ao mês de ${mes} de ${ano}.`,
-                            size: 20,
-                            font: "Calibri"
-                        })
-                    ]
-                });
-            }
-
-            // Collect form data
-            const sumTexts = [];
-            for (let i = 1; i <= 11; i++) {
-                sumTexts.push(document.getElementById(`sum_p${i}`).value);
-            }
-
-            const segIntro = document.getElementById('seg_intro').value;
-            const portIntro = document.getElementById('port_intro').value;
-            const fisicoTexto = document.getElementById('fisico_texto').value;
-            const financeiroTexto = document.getElementById('financeiro_texto').value;
-            const projIntro = document.getElementById('proj_intro').value;
-
-            // Collect projects from table
-            const rows = document.querySelectorAll('#projectBody tr');
-            const projects = [];
-            rows.forEach(row => {
-                const inputs = row.querySelectorAll('input');
-                const select = row.querySelector('select');
-                projects.push({
-                    nome: inputs[0].value,
-                    status: select.value,
-                    prev: inputs[1].value,
-                    real: inputs[2].value,
-                    desv: inputs[3].value,
-                    valor: inputs[4].value,
-                    realrf: inputs[5].value,
-                    carry: inputs[6].value
-                });
-            });
-
-            // Collect photos
-            const photoTitles = document.querySelectorAll('.photo-title');
-            const photoCaptions = document.querySelectorAll('.photo-caption');
-            const photos = [];
-            photoTitles.forEach((t, i) => {
-                if (t.value.trim()) {
-                    photos.push({ titulo: t.value, legenda: photoCaptions[i].value });
+                function makeHeading(text) {
+                    return new D.Paragraph({
+                        spacing: { before: 300, after: 150 },
+                        children: [
+                            new D.TextRun({ text: text, bold: true, size: 30, color: GREEN, font: "Calibri" })
+                        ]
+                    });
                 }
-            });
 
-            // ---- BUILD TABLE ----
-            const headerCellProps = {
-                shading: { type: ShadingType.SOLID, color: GREEN },
-                verticalAlign: VerticalAlign.CENTER
-            };
-
-            function headerCell(text, opts = {}) {
-                return new TableCell({
-                    ...headerCellProps,
-                    ...opts,
-                    children: [
-                        new Paragraph({
-                            alignment: AlignmentType.CENTER,
-                            children: [
-                                new TextRun({ text, bold: true, size: 14, color: WHITE, font: "Calibri" })
-                            ]
-                        })
-                    ]
-                });
-            }
-
-            function dataCell(text, bold = false) {
-                return new TableCell({
-                    verticalAlign: VerticalAlign.CENTER,
-                    children: [
-                        new Paragraph({
-                            alignment: AlignmentType.CENTER,
-                            children: [
-                                new TextRun({ text, bold, size: 14, font: "Calibri" })
-                            ]
-                        })
-                    ]
-                });
-            }
-
-            function dataCellLeft(text) {
-                return new TableCell({
-                    verticalAlign: VerticalAlign.CENTER,
-                    children: [
-                        new Paragraph({
-                            children: [
-                                new TextRun({ text, size: 14, font: "Calibri" })
-                            ]
-                        })
-                    ]
-                });
-            }
-
-            const tableHeaderRow1 = new TableRow({
-                tableHeader: true,
-                children: [
-                    headerCell("Projeto", { rowSpan: 2 }),
-                    headerCell("Status Físico do projeto", { columnSpan: 4 }),
-                    headerCell("Status Financeiro no ano (USD)", { columnSpan: 3 })
-                ]
-            });
-
-            const tableHeaderRow2 = new TableRow({
-                tableHeader: true,
-                children: [
-                    headerCell("Status"),
-                    headerCell("% Prev."),
-                    headerCell("% Real"),
-                    headerCell("% Desv."),
-                    headerCell("Valor Total"),
-                    headerCell("Real + RF"),
-                    headerCell("Carry Over / Saving")
-                ]
-            });
-
-            const tableDataRows = projects.map(p => {
-                return new TableRow({
-                    children: [
-                        dataCellLeft(p.nome),
-                        dataCell(p.status, true),
-                        dataCell(p.prev),
-                        dataCell(p.real),
-                        dataCell(p.desv),
-                        dataCell(p.valor),
-                        dataCell(p.realrf),
-                        dataCell(p.carry)
-                    ]
-                });
-            });
-
-            const projectTable = new Table({
-                width: { size: 100, type: WidthType.PERCENTAGE },
-                layout: TableLayoutType.AUTOFIT,
-                rows: [tableHeaderRow1, tableHeaderRow2, ...tableDataRows]
-            });
-
-            // ---- BUILD DOCUMENT ----
-            const children = [];
-
-            // Sumário Executivo
-            children.push(makeHeading("Sumário Executivo"));
-            children.push(makeIntro(mes, ano));
-            sumTexts.forEach(t => { if (t.trim()) children.push(makeParagraph(t)); });
-
-            // Segurança
-            children.push(makeHeading("Segurança e meio ambiente"));
-            children.push(makeParagraph(segIntro));
-
-            // Portfólio
-            children.push(makeHeading("Portfólio de Projetos"));
-            children.push(makeParagraph(portIntro));
-
-            // Visão Física
-            children.push(makeHeading("Visão Física"));
-            children.push(makeParagraph(fisicoTexto));
-
-            // Visão Financeira
-            children.push(makeHeading("Visão Financeira"));
-            children.push(makeParagraph(financeiroTexto));
-
-            // Principais Projetos
-            children.push(makeHeading("Principais projetos"));
-            children.push(makeParagraph(projIntro));
-            children.push(new Paragraph({ spacing: { after: 100 }, children: [] }));
-            children.push(projectTable);
-
-            // Registros Fotográficos
-            if (photos.length > 0) {
-                children.push(makeHeading("Registros fotográficos"));
-                photos.forEach(p => {
-                    children.push(new Paragraph({
-                        spacing: { before: 200, after: 60 },
+                function makePara(text) {
+                    return new D.Paragraph({
+                        spacing: { after: 120 },
+                        alignment: D.AlignmentType.JUSTIFIED,
                         children: [
-                            new TextRun({ text: p.titulo, bold: true, size: 18, font: "Calibri" })
+                            new D.TextRun({ text: text, size: 20, font: "Calibri" })
                         ]
-                    }));
-                    children.push(new Paragraph({
-                        spacing: { after: 100 },
+                    });
+                }
+
+                function makeImage(slotId, maxW) {
+                    var imgData = imageStore[slotId];
+                    if (!imgData) return null;
+                    var w = maxW || 600;
+                    var ratio = imgData.height / imgData.width;
+                    var h = Math.round(w * ratio);
+                    return new D.Paragraph({
+                        spacing: { after: 120 },
+                        alignment: D.AlignmentType.CENTER,
                         children: [
-                            new TextRun({ text: p.legenda, size: 16, font: "Calibri", italics: true })
+                            new D.ImageRun({
+                                data: imgData.data,
+                                transformation: { width: w, height: h },
+                                type: imgData.type === 'png' ? D.ImageType ? D.ImageType.PNG : undefined : undefined
+                            })
                         ]
-                    }));
+                    });
+                }
+
+                function hCell(text, opts) {
+                    var o = opts || {};
+                    var cellOpts = {
+                        shading: { type: D.ShadingType.SOLID, color: GREEN },
+                        verticalAlign: D.VerticalAlign.CENTER,
+                        children: [
+                            new D.Paragraph({
+                                alignment: D.AlignmentType.CENTER,
+                                children: [
+                                    new D.TextRun({ text: text, bold: true, size: 14, color: WHITE, font: "Calibri" })
+                                ]
+                            })
+                        ]
+                    };
+                    if (o.rowSpan) cellOpts.rowSpan = o.rowSpan;
+                    if (o.columnSpan) cellOpts.columnSpan = o.columnSpan;
+                    return new D.TableCell(cellOpts);
+                }
+
+                function dCell(text, bold, align) {
+                    return new D.TableCell({
+                        verticalAlign: D.VerticalAlign.CENTER,
+                        children: [
+                            new D.Paragraph({
+                                alignment: align || D.AlignmentType.CENTER,
+                                children: [
+                                    new D.TextRun({ text: text, bold: !!bold, size: 14, font: "Calibri" })
+                                ]
+                            })
+                        ]
+                    });
+                }
+
+                // Collect text
+                var sumTexts = [];
+                for (var i = 1; i <= 11; i++) {
+                    sumTexts.push(document.getElementById('sum_p' + i).value);
+                }
+                var segIntro = document.getElementById('seg_intro').value;
+                var portIntro = document.getElementById('port_intro').value;
+                var fisicoTexto = document.getElementById('fisico_texto').value;
+                var financeiroTexto = document.getElementById('financeiro_texto').value;
+                var projIntro = document.getElementById('proj_intro').value;
+
+                // Collect projects
+                var rows = document.querySelectorAll('#projectBody tr');
+                var projects = [];
+                rows.forEach(function(row) {
+                    var inputs = row.querySelectorAll('input');
+                    var select = row.querySelector('select');
+                    projects.push({
+                        nome: inputs[0].value,
+                        status: select.value,
+                        prev: inputs[1].value,
+                        real: inputs[2].value,
+                        desv: inputs[3].value,
+                        valor: inputs[4].value,
+                        realrf: inputs[5].value,
+                        carry: inputs[6].value
+                    });
                 });
+
+                // Build table
+                var tRow1 = new D.TableRow({
+                    tableHeader: true,
+                    children: [
+                        hCell("Projeto", { rowSpan: 2 }),
+                        hCell("Status Fisico do projeto", { columnSpan: 4 }),
+                        hCell("Status Financeiro no ano (USD)", { columnSpan: 3 })
+                    ]
+                });
+                var tRow2 = new D.TableRow({
+                    tableHeader: true,
+                    children: [
+                        hCell("Status"), hCell("% Prev."), hCell("% Real"), hCell("% Desv."),
+                        hCell("Valor Total"), hCell("Real + RF"), hCell("Carry Over / Saving")
+                    ]
+                });
+                var tDataRows = projects.map(function(p) {
+                    return new D.TableRow({
+                        children: [
+                            dCell(p.nome, false, D.AlignmentType.LEFT),
+                            dCell(p.status, true),
+                            dCell(p.prev), dCell(p.real), dCell(p.desv),
+                            dCell(p.valor), dCell(p.realrf), dCell(p.carry)
+                        ]
+                    });
+                });
+                var projTable = new D.Table({
+                    width: { size: 100, type: D.WidthType.PERCENTAGE },
+                    rows: [tRow1, tRow2].concat(tDataRows)
+                });
+
+                // Build document children
+                var children = [];
+
+                // Sumario
+                children.push(makeHeading("Sumário Executivo"));
+                children.push(makePara("Apresentamos o resumo das atividades relacionadas aos projetos CAPEX sob gestão da área de engenharia da Unidade Guaíba, referente ao mês de " + mes + " de " + ano + "."));
+                sumTexts.forEach(function(t) { if (t.trim()) children.push(makePara(t)); });
+
+                // Seguranca
+                children.push(makeHeading("Segurança e meio ambiente"));
+                children.push(makePara(segIntro));
+                var segImgs = ['slot_seg1', 'slot_seg2', 'slot_seg3', 'slot_seg4'];
+                segImgs.forEach(function(s) {
+                    var img = makeImage(s, 550);
+                    if (img) children.push(img);
+                });
+
+                // Portfolio
+                children.push(makeHeading("Portfólio de Projetos"));
+                children.push(makePara(portIntro));
+                ['slot_port1', 'slot_port2', 'slot_port3'].forEach(function(s) {
+                    var img = makeImage(s, 600);
+                    if (img) children.push(img);
+                });
+
+                // Visao Fisica
+                children.push(makeHeading("Visão Física"));
+                children.push(makePara(fisicoTexto));
+                var imgFis = makeImage('slot_fisico', 600);
+                if (imgFis) children.push(imgFis);
+
+                // Visao Financeira
+                children.push(makeHeading("Visão Financeira"));
+                children.push(makePara(financeiroTexto));
+                var imgFin = makeImage('slot_financeiro', 600);
+                if (imgFin) children.push(imgFin);
+
+                // Principais Projetos
+                children.push(makeHeading("Principais projetos"));
+                children.push(makePara(projIntro));
+                children.push(new D.Paragraph({ spacing: { after: 100 }, children: [] }));
+                children.push(projTable);
+
+                // Registros Fotograficos
+                var photoEntries = document.querySelectorAll('.photo-entry');
+                if (photoEntries.length > 0) {
+                    children.push(makeHeading("Registros fotográficos"));
+                    photoEntries.forEach(function(entry) {
+                        var titulo = entry.querySelector('.photo-title').value;
+                        var legenda = entry.querySelector('.photo-caption').value;
+                        var slotId = entry.querySelector('.img-slot').id;
+                        if (titulo.trim()) {
+                            children.push(new D.Paragraph({
+                                spacing: { before: 200, after: 60 },
+                                children: [
+                                    new D.TextRun({ text: titulo, bold: true, size: 18, font: "Calibri" })
+                                ]
+                            }));
+                            if (legenda.trim()) {
+                                children.push(new D.Paragraph({
+                                    spacing: { after: 60 },
+                                    children: [
+                                        new D.TextRun({ text: legenda, size: 16, font: "Calibri", italics: true })
+                                    ]
+                                }));
+                            }
+                            var imgPhoto = makeImage(slotId, 500);
+                            if (imgPhoto) children.push(imgPhoto);
+                        }
+                    });
+                }
+
+                var doc = new D.Document({
+                    styles: {
+                        default: {
+                            document: {
+                                run: { font: "Calibri", size: 20 }
+                            }
+                        }
+                    },
+                    sections: [{
+                        properties: {
+                            page: {
+                                margin: { top: 1440, right: 1080, bottom: 1440, left: 1080 }
+                            }
+                        },
+                        headers: {
+                            default: new D.Header({
+                                children: [
+                                    new D.Paragraph({
+                                        alignment: D.AlignmentType.RIGHT,
+                                        children: [
+                                            new D.TextRun({
+                                                text: "Engenharia - Sumário Executivo Guaíba - " + mesCapital + "/" + ano,
+                                                size: 16, color: "888888", font: "Calibri"
+                                            })
+                                        ]
+                                    })
+                                ]
+                            })
+                        },
+                        footers: {
+                            default: new D.Footer({
+                                children: [
+                                    new D.Paragraph({
+                                        alignment: D.AlignmentType.CENTER,
+                                        children: [
+                                            new D.TextRun({ text: "CMPC - Unidade Guaíba | ", size: 14, color: "888888", font: "Calibri" }),
+                                            new D.TextRun({ children: [D.PageNumber.CURRENT], size: 14, color: "888888", font: "Calibri" })
+                                        ]
+                                    })
+                                ]
+                            })
+                        },
+                        children: children
+                    }]
+                });
+
+                var nomeArquivo = "Engenharia_Sumario Executivo Guaiba_" + mesCapital + "_" + ano + "_rev" + rev + ".docx";
+
+                D.Packer.toBlob(doc).then(function(blob) {
+                    saveAs(blob, nomeArquivo);
+                    btn.disabled = false;
+                    btn.textContent = 'Baixar Word';
+                }).catch(function(err) {
+                    alert('Erro ao gerar Word: ' + err.message);
+                    console.error(err);
+                    btn.disabled = false;
+                    btn.textContent = 'Baixar Word';
+                });
+
+            } catch(err) {
+                alert('Erro: ' + err.message + '\n\nVerifique o console (F12) para detalhes.');
+                console.error(err);
+                btn.disabled = false;
+                btn.textContent = 'Baixar Word';
             }
-
-            const doc = new Document({
-                styles: {
-                    default: {
-                        document: {
-                            run: { font: "Calibri", size: 20 }
-                        }
-                    }
-                },
-                sections: [{
-                    properties: {
-                        page: {
-                            margin: { top: 1440, right: 1080, bottom: 1440, left: 1080 }
-                        }
-                    },
-                    headers: {
-                        default: new Header({
-                            children: [
-                                new Paragraph({
-                                    alignment: AlignmentType.RIGHT,
-                                    children: [
-                                        new TextRun({
-                                            text: `Engenharia - Sumário Executivo Guaíba - ${mesCapital}/${ano}`,
-                                            size: 16,
-                                            color: "888888",
-                                            font: "Calibri"
-                                        })
-                                    ]
-                                })
-                            ]
-                        })
-                    },
-                    footers: {
-                        default: new Footer({
-                            children: [
-                                new Paragraph({
-                                    alignment: AlignmentType.CENTER,
-                                    children: [
-                                        new TextRun({
-                                            text: "CMPC - Unidade Guaíba | ",
-                                            size: 14,
-                                            color: "888888",
-                                            font: "Calibri"
-                                        }),
-                                        new TextRun({
-                                            children: [PageNumber.CURRENT],
-                                            size: 14,
-                                            color: "888888",
-                                            font: "Calibri"
-                                        })
-                                    ]
-                                })
-                            ]
-                        })
-                    },
-                    children: children
-                }]
-            });
-
-            const nomeArquivo = `Engenharia_Sumário Executivo Guaiba_${mesCapital}_${ano}_rev${rev}.docx`;
-
-            Packer.toBlob(doc).then(blob => {
-                saveAs(blob, nomeArquivo);
-            });
         }
     </script>
 </body>
