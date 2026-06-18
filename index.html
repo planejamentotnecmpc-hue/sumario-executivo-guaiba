@@ -1,713 +1,625 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor - Sumário Executivo Guaíba</title>
-    <script src="https://unpkg.com/docx@8.5.0/build/index.umd.js"></script>
-    <script src="https://unpkg.com/file-saver@2.0.5/dist/FileSaver.min.js"></script>
-    <style>
-        :root {
-            --cmpc-green: #005a32;
-            --cmpc-light: #e8f5e9;
-            --cmpc-dark: #003d1f;
-            --border: #ccc;
-            --bg: #f5f5f5;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); color: #333; padding: 20px; }
-        .container { max-width: 1100px; margin: 0 auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 12px rgba(0,0,0,0.1); padding: 30px; }
-        .btn-download { background: var(--cmpc-green); color: #fff; border: none; padding: 12px 24px; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: bold; transition: background 0.2s; }
-        .btn-download:hover { background: var(--cmpc-dark); }
-        .btn-download:disabled { background: #999; cursor: wait; }
-        .section { margin-bottom: 30px; border: 1px solid #e0e0e0; border-radius: 6px; overflow: hidden; }
-        .section-title { background: var(--cmpc-green); color: #fff; padding: 10px 15px; font-size: 16px; font-weight: bold; cursor: pointer; user-select: none; display: flex; justify-content: space-between; align-items: center; }
-        .section-title::after { content: '\25BC'; font-size: 12px; transition: transform 0.2s; }
-        .section-title.collapsed::after { transform: rotate(-90deg); }
-        .section-body { padding: 15px; }
-        .section-body.hidden { display: none; }
-        .field-group { margin-bottom: 15px; }
-        .field-group label { display: block; font-weight: 600; margin-bottom: 4px; color: #555; font-size: 13px; }
-        .field-group textarea { width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; font-family: inherit; resize: vertical; min-height: 60px; line-height: 1.5; }
-        .field-group input[type="text"], .field-group input[type="number"] { padding: 6px 10px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; width: 100%; }
-        .field-row { display: flex; gap: 15px; flex-wrap: wrap; }
-        .field-row .field-group { flex: 1; min-width: 150px; }
-        .project-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-        .project-table th { background: var(--cmpc-green); color: #fff; padding: 8px 6px; text-align: center; font-size: 11px; border: 1px solid #004d2a; }
-        .project-table td { padding: 5px 6px; border: 1px solid #ddd; text-align: center; }
-        .project-table td:first-child { text-align: left; min-width: 200px; }
-        .project-table td input { width: 100%; border: 1px solid transparent; padding: 3px 4px; font-size: 12px; text-align: center; background: transparent; }
-        .project-table td:first-child input { text-align: left; }
-        .project-table td input:hover, .project-table td input:focus { border-color: var(--cmpc-green); background: #fff; outline: none; }
-        .project-table td select { width: 100%; border: 1px solid transparent; padding: 3px; font-size: 12px; background: transparent; cursor: pointer; }
-        .project-table td select:hover, .project-table td select:focus { border-color: var(--cmpc-green); background: #fff; }
-        .project-table tr:nth-child(even) { background: #f9f9f9; }
-        .project-table tr:hover { background: var(--cmpc-light); }
-        .btn-add { background: var(--cmpc-green); color: #fff; border: none; padding: 6px 14px; border-radius: 4px; cursor: pointer; font-size: 13px; }
-        .btn-add:hover { background: var(--cmpc-dark); }
-        .btn-remove { background: #dc3545; color: #fff; border: none; padding: 2px 8px; border-radius: 3px; cursor: pointer; font-size: 11px; }
-        .btn-remove:hover { background: #a71d2a; }
-        .download-bar { position: sticky; top: 0; background: #fff; padding: 12px 0; border-bottom: 2px solid var(--cmpc-green); z-index: 100; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .img-upload-area { display: flex; gap: 15px; flex-wrap: wrap; margin-top: 10px; }
-        .img-slot { border: 2px dashed #ccc; border-radius: 6px; padding: 10px; text-align: center; min-width: 200px; flex: 1; position: relative; background: #fafafa; }
-        .img-slot.has-image { border-color: var(--cmpc-green); border-style: solid; }
-        .img-slot img { max-width: 100%; max-height: 200px; border-radius: 4px; }
-        .img-slot .img-label { font-size: 12px; font-weight: 600; color: #555; margin-bottom: 6px; }
-        .img-slot .img-placeholder { color: #aaa; font-size: 12px; padding: 30px 10px; }
-        .img-slot input[type="file"] { display: none; }
-        .img-slot .btn-choose { background: var(--cmpc-green); color: #fff; border: none; padding: 5px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; margin-top: 6px; }
-        .img-slot .btn-choose:hover { background: var(--cmpc-dark); }
-        .img-slot .btn-clear { position: absolute; top: 5px; right: 5px; background: #dc3545; color: #fff; border: none; width: 20px; height: 20px; border-radius: 50%; cursor: pointer; font-size: 11px; line-height: 20px; display: none; }
-        .img-slot.has-image .btn-clear { display: block; }
-        .photo-entry { border: 1px solid #e0e0e0; border-radius: 6px; padding: 12px; margin-bottom: 12px; background: #fafafa; }
-        .photo-entry .field-row { align-items: end; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Editor - Sumario Executivo Guaiba</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script src="https://unpkg.com/docx@8.5.0/build/index.umd.js"></script>
+<script src="https://unpkg.com/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+<style>
+:root{--g:#005a32;--gl:#e8f5e9;--gd:#003d1f;--bd:#ccc;--bg:#f5f5f5}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--bg);color:#333;padding:10px 20px}
+.container{max-width:1200px;margin:0 auto;background:#fff;border-radius:8px;box-shadow:0 2px 12px rgba(0,0,0,.1);padding:25px}
+.download-bar{position:sticky;top:0;background:#fff;padding:10px 0;border-bottom:2px solid var(--g);z-index:100;display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;flex-wrap:wrap;gap:8px}
+.download-bar select,.download-bar input{padding:5px 8px;border:1px solid var(--bd);border-radius:4px;font-size:13px}
+.btn-dl{background:var(--g);color:#fff;border:none;padding:10px 22px;border-radius:6px;font-size:15px;cursor:pointer;font-weight:bold}
+.btn-dl:hover{background:var(--gd)}
+.btn-dl:disabled{background:#999;cursor:wait}
+.sec{margin-bottom:20px;border:1px solid #e0e0e0;border-radius:6px;overflow:hidden}
+.sec-t{background:var(--g);color:#fff;padding:9px 14px;font-size:15px;font-weight:bold;cursor:pointer;user-select:none;display:flex;justify-content:space-between;align-items:center}
+.sec-t::after{content:'\25BC';font-size:11px}
+.sec-t.c::after{transform:rotate(-90deg)}
+.sec-b{padding:14px}
+.sec-b.h{display:none}
+.fg{margin-bottom:12px}
+.fg label{display:block;font-weight:600;margin-bottom:3px;color:#555;font-size:12px}
+.fg textarea{width:100%;padding:7px;border:1px solid var(--bd);border-radius:4px;font-size:12px;font-family:inherit;resize:vertical;min-height:50px;line-height:1.4}
+.fg input[type="text"],.fg input[type="number"]{padding:5px 7px;border:1px solid var(--bd);border-radius:4px;font-size:12px;width:100%}
+.fr{display:flex;gap:12px;flex-wrap:wrap}
+.fr .fg{flex:1;min-width:120px}
+.dtbl{width:100%;border-collapse:collapse;font-size:11px;margin:8px 0}
+.dtbl th{background:var(--g);color:#fff;padding:5px 4px;text-align:center;font-size:10px;border:1px solid #004d2a}
+.dtbl td{padding:3px 4px;border:1px solid #ddd;text-align:center}
+.dtbl td input{width:100%;border:1px solid transparent;padding:2px 3px;font-size:11px;text-align:center;background:transparent}
+.dtbl td input:focus{border-color:var(--g);background:#fff;outline:none}
+.dtbl td:first-child input{text-align:left}
+.dtbl tr:nth-child(even){background:#f9f9f9}
+.btn-a{background:var(--g);color:#fff;border:none;padding:5px 12px;border-radius:4px;cursor:pointer;font-size:12px;margin-top:6px}
+.btn-a:hover{background:var(--gd)}
+.btn-r{background:#dc3545;color:#fff;border:none;padding:2px 7px;border-radius:3px;cursor:pointer;font-size:10px}
+.btn-r:hover{background:#a71d2a}
+.chart-row{display:flex;gap:15px;flex-wrap:wrap;margin:10px 0}
+.chart-box{flex:1;min-width:300px;border:1px solid #e0e0e0;border-radius:6px;padding:10px;background:#fafafa}
+.chart-box canvas{width:100%!important;max-height:280px}
+.chart-box h4{font-size:13px;color:var(--g);margin-bottom:6px;text-align:center}
+.card-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:10px 0}
+.card{border:1px solid #e0e0e0;border-radius:6px;padding:12px;background:#fafafa}
+.card h4{font-size:13px;color:var(--g);margin-bottom:8px}
+.card .kpi{display:flex;justify-content:space-around;text-align:center;flex-wrap:wrap;gap:6px}
+.card .kpi-item{flex:1;min-width:80px;background:#fff;border-radius:6px;padding:8px 4px;border:1px solid #eee}
+.card .kpi-item .val{font-size:20px;font-weight:bold;color:#333}
+.card .kpi-item .lbl{font-size:9px;color:#888}
+.mn-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:3px;margin:5px 0}
+.mn-grid label{font-size:9px;text-align:center;color:#888;font-weight:normal}
+.mn-grid input{width:100%;text-align:center;font-size:11px;padding:3px 1px;border:1px solid #ddd;border-radius:3px}
+.mn-grid input:focus{border-color:var(--g);outline:none}
+.mn-label{font-size:11px;font-weight:600;color:#555;margin:6px 0 2px}
+.photo-entry{border:1px solid #e0e0e0;border-radius:6px;padding:10px;margin-bottom:10px;background:#fafafa}
+.img-slot{border:2px dashed #ccc;border-radius:6px;padding:8px;text-align:center;min-height:80px;position:relative;background:#fff;margin-top:6px}
+.img-slot.has-image{border-color:var(--g);border-style:solid}
+.img-slot img{max-width:100%;max-height:180px;border-radius:4px}
+.img-slot input[type="file"]{display:none}
+.img-slot .btn-choose{background:var(--g);color:#fff;border:none;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:11px;margin-top:4px}
+.img-slot .btn-clear{position:absolute;top:4px;right:4px;background:#dc3545;color:#fff;border:none;width:18px;height:18px;border-radius:50%;cursor:pointer;font-size:10px;display:none}
+.img-slot.has-image .btn-clear{display:block}
+.donut-inputs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.donut-inputs .di{display:flex;align-items:center;gap:3px;font-size:11px}
+.donut-inputs .di input{width:45px;text-align:center;padding:2px;border:1px solid #ddd;border-radius:3px;font-size:11px}
+.donut-inputs .di input:focus{border-color:var(--g);outline:none}
+@media(max-width:768px){.card-grid{grid-template-columns:1fr}.chart-row{flex-direction:column}.mn-grid{grid-template-columns:repeat(6,1fr)}}
+</style>
 </head>
 <body>
-    <div class="container">
-        <div class="download-bar">
-            <div style="display:flex; gap:15px; align-items:center; flex-wrap:wrap;">
-                <span style="font-weight:bold; color:var(--cmpc-green); font-size:18px;">Sumario Executivo - Guaiba</span>
-                <select id="mesRef">
-                    <option value="janeiro">Janeiro</option>
-                    <option value="fevereiro">Fevereiro</option>
-                    <option value="marco">Marco</option>
-                    <option value="abril">Abril</option>
-                    <option value="maio" selected>Maio</option>
-                    <option value="junho">Junho</option>
-                    <option value="julho">Julho</option>
-                    <option value="agosto">Agosto</option>
-                    <option value="setembro">Setembro</option>
-                    <option value="outubro">Outubro</option>
-                    <option value="novembro">Novembro</option>
-                    <option value="dezembro">Dezembro</option>
-                </select>
-                <input type="number" id="anoRef" value="2026" style="width:80px;" />
-                <label style="font-size:13px; color:#555;">Rev:</label>
-                <input type="text" id="revRef" value="01" style="width:50px;" />
-            </div>
-            <button class="btn-download" id="btnDownload" onclick="gerarWord()">Baixar Word</button>
-        </div>
+<div class="container">
+<div class="download-bar">
+ <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+  <span style="font-weight:bold;color:var(--g);font-size:17px">Sumario Executivo - Guaiba</span>
+  <select id="mesRef"><option value="janeiro">Jan</option><option value="fevereiro">Fev</option><option value="marco">Mar</option><option value="abril">Abr</option><option value="maio" selected>Mai</option><option value="junho">Jun</option><option value="julho">Jul</option><option value="agosto">Ago</option><option value="setembro">Set</option><option value="outubro">Out</option><option value="novembro">Nov</option><option value="dezembro">Dez</option></select>
+  <input type="number" id="anoRef" value="2026" style="width:70px">
+  <span style="font-size:12px;color:#555">Rev:</span>
+  <input type="text" id="revRef" value="01" style="width:40px">
+ </div>
+ <button class="btn-dl" id="btnDl" onclick="gerarWord()">Baixar Word</button>
+</div>
 
-        <!-- SUMARIO EXECUTIVO -->
-        <div class="section">
-            <div class="section-title" onclick="toggleSection(this)">Sumario Executivo</div>
-            <div class="section-body">
-                <div class="field-group">
-                    <label>Paragrafo 1 - Visao geral do portfolio</label>
-                    <textarea id="sum_p1" rows="3">No portfólio anual temos 53 projetos aprovados, 9 projetos pendentes aprovação, 3 projetos postergados, 2 projetos normais cancelados e 1 projeto encerrado.</textarea>
-                </div>
-                <div class="field-group">
-                    <label>Paragrafo 2 - Avanco fisico</label>
-                    <textarea id="sum_p2" rows="3">Em relação ao avanço físico do período, acumulamos 53,4% de execução com desvio de -4,6% em relação as atividades planejadas (58,0%). O desvio se dá principalmente pelos projetos: DEFAPA – Condições de Segurança e Construção de nova sala de operadores.</textarea>
-                </div>
-                <div class="field-group">
-                    <label>Paragrafo 3 - Planejamento financeiro</label>
-                    <textarea id="sum_p3" rows="3">Com relação ao planejamento financeiro, o desembolso projetado (Forecast) para o ano é de 11.89 MMUSD em relação a nova linha de base do ano de 11.90 MMUSD. O acumulado do mês de maio foi de 4.85 MMUSD em relação ao valor previsto de 6.55 MMUSD para o período.</textarea>
-                </div>
-                <div class="field-group">
-                    <label>Paragrafo 4 - Solicitacoes de Mudanca</label>
-                    <textarea id="sum_p4" rows="3">No mês de maio foram registradas duas Solicitações de Mudança (SM) no portfólio referente aos projetos de NR-12 e Instalação de estrutura para movimentação de carga.</textarea>
-                </div>
-                <div class="field-group">
-                    <label>Paragrafo 5 - Detalhamento SM 1</label>
-                    <textarea id="sum_p5" rows="3">O projeto NR-12 teve seu planejamento alterado devido a saída da empresa de contrato de montagem vigente, sendo necessária uma nova contratação, alterando assim o prazo final de montagem do escopo mecânico.</textarea>
-                </div>
-                <div class="field-group">
-                    <label>Paragrafo 6 - Detalhamento SM 2</label>
-                    <textarea id="sum_p6" rows="3">No que diz respeito ao projeto de Instalação de estrutura para movimentação de carga a mudança se deu pelo declínio da empresa contratada ao escopo de montagem, sendo necessária duas novas contratações (mecânica e elétrica).</textarea>
-                </div>
-                <div class="field-group">
-                    <label>Paragrafo 7 - Seguranca e meio ambiente</label>
-                    <textarea id="sum_p7" rows="2">Quanto à segurança e meio ambiente, tivemos um pico de efetivo de 173 pessoas, não houve registro de ocorrência, totalizando 33,5 mil horas trabalhadas no período.</textarea>
-                </div>
-                <div class="field-group">
-                    <label>Paragrafo 8 - REVAMP UG1</label>
-                    <textarea id="sum_p8" rows="4">No projeto REVAMP UG1, atingimos o avanço físico real de 97,9% sendo um desvio de -0,9% em relação ao planejado (98,8%), as variações se referem ao atraso na execução de pendências relacionadas a PG, sem impactos operativos. Em relação ao orçamento total aprovado do projeto: 137,5 MMUSD, totalizamos o pagamento de 119,4 MMUSD e compromisso de 14,0 MMUSD, totalizando entre o realizado e compromissado 97,0% do valor total do projeto.</textarea>
-                </div>
-                <div class="field-group">
-                    <label>Paragrafo 9 - Carteira REVAMP</label>
-                    <textarea id="sum_p9" rows="2">Em abril, a carteira do REVAMP, totalizou 132 projetos. Desses, 16 encontram-se em andamento por lista de pendências e 113 já encerrados, havendo 3 projetos em fase de aprovação para o período.</textarea>
-                </div>
-                <div class="field-group">
-                    <label>Paragrafo 10 - Central de residuos Santa Izabel</label>
-                    <textarea id="sum_p10" rows="2">No projeto Central de resíduos Santa Izabel, atingimos o avanço físico real de 40,24% sendo um desvio positivo de +4,72% em relação ao planejado (35,51%).</textarea>
-                </div>
-                <div class="field-group">
-                    <label>Paragrafo 11 - Casa de Crianzas (Instituto CMPC)</label>
-                    <textarea id="sum_p11" rows="2">No projeto Casa de Crianzas (Instituto CMPC), atingimos o avanço físico real de 30,10% com um desvio de -0,6% em relação ao planejado (30,7%).</textarea>
-                </div>
-            </div>
-        </div>
+<!-- SUMARIO -->
+<div class="sec"><div class="sec-t" onclick="tog(this)">Sumario Executivo</div><div class="sec-b">
+ <div class="fg"><label>P1 - Visao geral do portfolio</label><textarea id="sum_p1" rows="2">No portfólio anual temos 53 projetos aprovados, 9 projetos pendentes aprovação, 3 projetos postergados, 2 projetos normais cancelados e 1 projeto encerrado.</textarea></div>
+ <div class="fg"><label>P2 - Avanco fisico</label><textarea id="sum_p2" rows="2">Em relação ao avanço físico do período, acumulamos 53,4% de execução com desvio de -4,6% em relação as atividades planejadas (58,0%). O desvio se dá principalmente pelos projetos: DEFAPA – Condições de Segurança e Construção de nova sala de operadores.</textarea></div>
+ <div class="fg"><label>P3 - Planejamento financeiro</label><textarea id="sum_p3" rows="2">Com relação ao planejamento financeiro, o desembolso projetado (Forecast) para o ano é de 11.89 MMUSD em relação a nova linha de base do ano de 11.90 MMUSD. O acumulado do mês de maio foi de 4.85 MMUSD em relação ao valor previsto de 6.55 MMUSD para o período.</textarea></div>
+ <div class="fg"><label>P4 - Solicitacoes de Mudanca</label><textarea id="sum_p4" rows="2">No mês de maio foram registradas duas Solicitações de Mudança (SM) no portfólio referente aos projetos de NR-12 e Instalação de estrutura para movimentação de carga.</textarea></div>
+ <div class="fg"><label>P5 - Detalhamento SM 1</label><textarea id="sum_p5" rows="2">O projeto NR-12 teve seu planejamento alterado devido a saída da empresa de contrato de montagem vigente, sendo necessária uma nova contratação, alterando assim o prazo final de montagem do escopo mecânico.</textarea></div>
+ <div class="fg"><label>P6 - Detalhamento SM 2</label><textarea id="sum_p6" rows="2">No que diz respeito ao projeto de Instalação de estrutura para movimentação de carga a mudança se deu pelo declínio da empresa contratada ao escopo de montagem, sendo necessária duas novas contratações (mecânica e elétrica).</textarea></div>
+ <div class="fg"><label>P7 - Seguranca e meio ambiente</label><textarea id="sum_p7" rows="2">Quanto à segurança e meio ambiente, tivemos um pico de efetivo de 173 pessoas, não houve registro de ocorrência, totalizando 33,5 mil horas trabalhadas no período.</textarea></div>
+ <div class="fg"><label>P8 - REVAMP UG1</label><textarea id="sum_p8" rows="3">No projeto REVAMP UG1, atingimos o avanço físico real de 97,9% sendo um desvio de -0,9% em relação ao planejado (98,8%), as variações se referem ao atraso na execução de pendências relacionadas a PG, sem impactos operativos. Em relação ao orçamento total aprovado do projeto: 137,5 MMUSD, totalizamos o pagamento de 119,4 MMUSD e compromisso de 14,0 MMUSD, totalizando entre o realizado e compromissado 97,0% do valor total do projeto.</textarea></div>
+ <div class="fg"><label>P9 - Carteira REVAMP</label><textarea id="sum_p9" rows="2">Em abril, a carteira do REVAMP, totalizou 132 projetos. Desses, 16 encontram-se em andamento por lista de pendências e 113 já encerrados, havendo 3 projetos em fase de aprovação para o período.</textarea></div>
+ <div class="fg"><label>P10 - Central de residuos Santa Izabel</label><textarea id="sum_p10" rows="2">No projeto Central de resíduos Santa Izabel, atingimos o avanço físico real de 40,24% sendo um desvio positivo de +4,72% em relação ao planejado (35,51%).</textarea></div>
+ <div class="fg"><label>P11 - Casa de Crianzas (Instituto CMPC)</label><textarea id="sum_p11" rows="2">No projeto Casa de Crianzas (Instituto CMPC), atingimos o avanço físico real de 30,10% com um desvio de -0,6% em relação ao planejado (30,7%).</textarea></div>
+</div></div>
 
-        <!-- SEGURANCA E MEIO AMBIENTE -->
-        <div class="section">
-            <div class="section-title" onclick="toggleSection(this)">Seguranca e Meio Ambiente</div>
-            <div class="section-body">
-                <div class="field-group">
-                    <label>Texto introdutorio</label>
-                    <textarea id="seg_intro" rows="2">O efetivo máximo no período totalizou 173 pessoas, com 33,5 mil horas trabalhadas mês.</textarea>
-                </div>
-                <div class="img-upload-area">
-                    <div class="img-slot" id="slot_seg1"></div>
-                    <div class="img-slot" id="slot_seg2"></div>
-                </div>
-                <div class="img-upload-area">
-                    <div class="img-slot" id="slot_seg3"></div>
-                    <div class="img-slot" id="slot_seg4"></div>
-                </div>
-            </div>
-        </div>
+<!-- SEGURANCA -->
+<div class="sec"><div class="sec-t" onclick="tog(this)">Seguranca e Meio Ambiente</div><div class="sec-b">
+ <div class="fg"><label>Texto introdutorio</label><textarea id="seg_intro" rows="1">O efetivo máximo no período totalizou 173 pessoas, com 33,5 mil horas trabalhadas mês.</textarea></div>
 
-        <!-- PORTFOLIO DE PROJETOS -->
-        <div class="section">
-            <div class="section-title" onclick="toggleSection(this)">Portfolio de Projetos</div>
-            <div class="section-body">
-                <div class="field-group">
-                    <label>Texto introdutorio</label>
-                    <textarea id="port_intro" rows="1">Abaixo a visão geral da carteira de projetos.</textarea>
-                </div>
-                <div class="img-upload-area">
-                    <div class="img-slot" id="slot_port1"></div>
-                    <div class="img-slot" id="slot_port2"></div>
-                </div>
-                <div class="img-upload-area" style="margin-top:0;">
-                    <div class="img-slot" id="slot_port3"></div>
-                </div>
-            </div>
-        </div>
+ <div class="card-grid">
+  <!-- KPIs Seguranca -->
+  <div class="card" id="cardSegKpi">
+   <h4>Dados gerais de Seguranca</h4>
+   <table class="dtbl" id="tblSeg">
+    <tr><th>Seguridad y Medio Ambiente</th><th>Meta</th><th>Ano (cc)</th></tr>
+    <tr><td>ACTP</td><td><input value="0" onchange="updateCharts()"></td><td><input value="0" onchange="updateCharts()"></td></tr>
+    <tr><td>ASTP</td><td><input value="1" onchange="updateCharts()"></td><td><input value="0" onchange="updateCharts()"></td></tr>
+    <tr><td>IOCAs Leves</td><td><input value="0" onchange="updateCharts()"></td><td><input value="0" onchange="updateCharts()"></td></tr>
+    <tr><td>IOCAs Serios</td><td><input value="1" onchange="updateCharts()"></td><td><input value="0" onchange="updateCharts()"></td></tr>
+    <tr><td>IOCAs Graves</td><td><input value="0" onchange="updateCharts()"></td><td><input value="0" onchange="updateCharts()"></td></tr>
+    <tr><td>IOCAs Muy Graves</td><td><input value="0" onchange="updateCharts()"></td><td><input value="0" onchange="updateCharts()"></td></tr>
+   </table>
+  </div>
 
-        <!-- VISAO FISICA -->
-        <div class="section">
-            <div class="section-title" onclick="toggleSection(this)">Visao Fisica</div>
-            <div class="section-body">
-                <div class="field-group">
-                    <label>Texto descritivo</label>
-                    <textarea id="fisico_texto" rows="2">A curva abaixo apresenta o planejamento do % previsto para os projetos aprovados no orçamento anual. Acumulamos 53,4% de execução com desvio de -4,6% em relação as atividades planejadas (58,0%).</textarea>
-                </div>
-                <div class="img-upload-area">
-                    <div class="img-slot" id="slot_fisico"></div>
-                </div>
-            </div>
-        </div>
+  <!-- KPIs Card -->
+  <div class="card">
+   <h4 id="kpiTitle">MAIO/2026 &nbsp;&nbsp;&nbsp; ACUMULADO ANO</h4>
+   <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+    <div class="kpi-item"><input id="kpi_acid_mes" value="0" style="width:60px;text-align:center;font-size:18px;font-weight:bold;border:1px solid #ddd;border-radius:4px"><div class="lbl">Acidentes Reportaveis</div></div>
+    <div class="kpi-item"><input id="kpi_acid_ac" value="0" style="width:60px;text-align:center;font-size:18px;font-weight:bold;border:1px solid #ddd;border-radius:4px"><div class="lbl">Acidentes Reportaveis</div></div>
+    <div class="kpi-item"><input id="kpi_dias_mes" value="31" style="width:60px;text-align:center;font-size:18px;font-weight:bold;border:1px solid #ddd;border-radius:4px"><div class="lbl">Dias sem ACTP</div></div>
+    <div class="kpi-item"><input id="kpi_dias_ac" value="151" style="width:60px;text-align:center;font-size:18px;font-weight:bold;border:1px solid #ddd;border-radius:4px"><div class="lbl">Dias sem ACTP</div></div>
+    <div class="kpi-item"><input id="kpi_hht_mes" value="33,50" style="width:60px;text-align:center;font-size:18px;font-weight:bold;border:1px solid #ddd;border-radius:4px"><div class="lbl">Hht x 1000</div></div>
+    <div class="kpi-item"><input id="kpi_hht_ac" value="167,10" style="width:60px;text-align:center;font-size:18px;font-weight:bold;border:1px solid #ddd;border-radius:4px"><div class="lbl">Hht x 1000</div></div>
+    <div class="kpi-item"><input id="kpi_freq_mes" value="0,00" style="width:60px;text-align:center;font-size:18px;font-weight:bold;border:1px solid #ddd;border-radius:4px"><div class="lbl">Tx. Freq. (ACTP+ASTP)</div></div>
+    <div class="kpi-item"><input id="kpi_freq_ac" value="0,00" style="width:60px;text-align:center;font-size:18px;font-weight:bold;border:1px solid #ddd;border-radius:4px"><div class="lbl">Tx. Freq. (ACTP+ASTP)</div></div>
+   </div>
+  </div>
 
-        <!-- VISAO FINANCEIRA -->
-        <div class="section">
-            <div class="section-title" onclick="toggleSection(this)">Visao Financeira</div>
-            <div class="section-body">
-                <div class="field-group">
-                    <label>Texto descritivo</label>
-                    <textarea id="financeiro_texto" rows="3">A curva abaixo apresenta a previsão de desembolso dos projetos para o ano totalizando 11,9USDM. A diferença apresentada em dezembro diz respeito postergação e cancelamento dos seguintes projetos: Linha de warm up CR2, nova linha de vapor de média da DEFAPA e Novo sistema de trasnfêrencia de Cl02. O desembolso realizado em maio foi de USDM 4.85.</textarea>
-                </div>
-                <div class="img-upload-area">
-                    <div class="img-slot" id="slot_financeiro"></div>
-                </div>
-            </div>
-        </div>
+  <!-- Meio Ambiente -->
+  <div class="card">
+   <h4>Dados de Meio Ambiente</h4>
+   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+    <div class="kpi-item"><input id="kpi_oc_mes" value="0" style="width:50px;text-align:center;font-size:18px;font-weight:bold;border:1px solid #ddd;border-radius:4px"><div class="lbl">Ocorrencias Ambientais</div></div>
+    <div class="kpi-item"><input id="kpi_oc_ac" value="0" style="width:50px;text-align:center;font-size:18px;font-weight:bold;border:1px solid #ddd;border-radius:4px"><div class="lbl">Ocorrencias Ambientais</div></div>
+   </div>
+   <div class="fg"><label>Observacoes</label><textarea id="seg_obs" rows="1">Sem observações de segurança.</textarea></div>
+  </div>
 
-        <!-- PRINCIPAIS PROJETOS -->
-        <div class="section">
-            <div class="section-title" onclick="toggleSection(this)">Principais Projetos</div>
-            <div class="section-body">
-                <div class="field-group">
-                    <label>Texto introdutorio</label>
-                    <textarea id="proj_intro" rows="1">Abaixo a visão física e financeira dos principais projetos aprovados em andamento classificados por valor de orçamento.</textarea>
-                </div>
-                <div style="overflow-x:auto; margin-top:10px;">
-                    <table class="project-table" id="projectTable">
-                        <thead>
-                            <tr>
-                                <th rowspan="2">Projeto</th>
-                                <th colspan="4">Status Fisico do projeto</th>
-                                <th colspan="3">Status Financeiro no ano (USD)</th>
-                                <th rowspan="2" style="width:40px;"></th>
-                            </tr>
-                            <tr>
-                                <th>Status</th>
-                                <th>% Prev.</th>
-                                <th>% Real</th>
-                                <th>% Desv.</th>
-                                <th>Valor Total</th>
-                                <th>Real + RF</th>
-                                <th>Carry Over / Saving</th>
-                            </tr>
-                        </thead>
-                        <tbody id="projectBody"></tbody>
-                    </table>
-                </div>
-                <div style="margin-top:10px;">
-                    <button class="btn-add" onclick="addProjectRow()">+ Adicionar projeto</button>
-                </div>
-            </div>
-        </div>
+  <!-- Histograma -->
+  <div class="card">
+   <h4>Histograma - Efetivo Total</h4>
+   <div class="mn-grid" id="gridHist"></div>
+   <canvas id="chartHist"></canvas>
+  </div>
+ </div>
 
-        <!-- REGISTROS FOTOGRAFICOS -->
-        <div class="section">
-            <div class="section-title" onclick="toggleSection(this)">Registros Fotograficos</div>
-            <div class="section-body">
-                <div id="photoEntries"></div>
-                <div style="margin-top:10px;">
-                    <button class="btn-add" onclick="addPhotoEntry()">+ Adicionar registro</button>
-                </div>
-            </div>
-        </div>
-    </div>
+ <!-- Hht Chart -->
+ <div class="chart-box" style="margin-top:10px">
+  <h4>Homem-hora total (Hht x1000)</h4>
+  <div class="mn-grid" id="gridHht"></div>
+  <canvas id="chartHht"></canvas>
+ </div>
+</div></div>
 
-    <script>
-        // ==================== IMAGE STORE ====================
-        var imageStore = {};
+<!-- PORTFOLIO -->
+<div class="sec"><div class="sec-t" onclick="tog(this)">Portfolio de Projetos</div><div class="sec-b">
+ <div class="fg"><label>Texto introdutorio</label><textarea id="port_intro" rows="1">Abaixo a visão geral da carteira de projetos.</textarea></div>
 
-        function initImageSlot(slotId, label) {
-            var slot = document.getElementById(slotId);
-            if (!slot) return;
-            slot.innerHTML =
-                '<div class="img-label">' + label + '</div>' +
-                '<div class="img-placeholder">Clique para selecionar imagem</div>' +
-                '<img style="display:none;" />' +
-                '<button class="btn-clear" onclick="clearImage(\'' + slotId + '\')" title="Remover">X</button>' +
-                '<input type="file" accept="image/*" onchange="handleImageUpload(\'' + slotId + '\', this)" />' +
-                '<br><button class="btn-choose" onclick="document.querySelector(\'#' + slotId + ' input[type=file]\').click()">Escolher imagem</button>';
-        }
+ <div class="chart-row">
+  <div class="chart-box">
+   <h4>Status</h4>
+   <div class="donut-inputs" id="diStatus"></div>
+   <canvas id="chartStatus"></canvas>
+  </div>
+  <div class="chart-box">
+   <h4>por Origen</h4>
+   <div class="donut-inputs" id="diOrigen"></div>
+   <canvas id="chartOrigen"></canvas>
+  </div>
+ </div>
+ <div class="chart-row">
+  <div class="chart-box">
+   <h4>por Gestion</h4>
+   <div class="donut-inputs" id="diGestion"></div>
+   <canvas id="chartGestion"></canvas>
+  </div>
+  <div class="chart-box">
+   <h4>por Naturaleza</h4>
+   <div class="donut-inputs" id="diNaturaleza"></div>
+   <canvas id="chartNaturaleza"></canvas>
+  </div>
+ </div>
 
-        function handleImageUpload(slotId, input) {
-            if (!input.files || !input.files[0]) return;
-            var file = input.files[0];
-            var slot = document.getElementById(slotId);
-            var reader = new FileReader();
-            reader.onload = function(e) {
-                var img = slot.querySelector('img');
-                var placeholder = slot.querySelector('.img-placeholder');
-                img.src = e.target.result;
-                img.style.display = 'block';
-                placeholder.style.display = 'none';
-                slot.classList.add('has-image');
-                var arrayReader = new FileReader();
-                arrayReader.onload = function(ev) {
-                    var tempImg = new Image();
-                    tempImg.onload = function() {
-                        imageStore[slotId] = {
-                            data: ev.target.result,
-                            width: tempImg.naturalWidth,
-                            height: tempImg.naturalHeight,
-                            type: file.type.includes('png') ? 'png' : 'jpg'
-                        };
-                    };
-                    tempImg.src = e.target.result;
-                };
-                arrayReader.readAsArrayBuffer(file);
-            };
-            reader.readAsDataURL(file);
-        }
+ <!-- KPI Table -->
+ <div class="card" style="margin-top:10px">
+  <h4>Principais Indicadores</h4>
+  <table class="dtbl" id="tblKpi">
+   <tr><th>Portafolio Proyectos</th><th>Meta</th><th>Mes</th><th>Ano (acc)</th></tr>
+   <tr><td>100% Aprovacao de Projetos Especiais</td><td><input value="6"></td><td><input value="0"></td><td><input value="0"></td></tr>
+   <tr><td>% Desvio Financeiro (Valor Real/Valor Previsto)</td><td><input value="<17%"></td><td><input value="-52,1%"></td><td><input value="-25,9%"></td></tr>
+   <tr><td>% Desvio Previsibilidade (Forecast)</td><td><input value="∆10%"></td><td><input value="3,8%"></td><td><input value="1,2%"></td></tr>
+   <tr><td>% Variacao Avance Fisico do Portfolio</td><td><input value="<17%"></td><td><input value="-0,7%"></td><td><input value="-4,6%"></td></tr>
+   <tr><td>% APIs Vencidos em su Fecha de Origen (Cambio de Cierre)</td><td><input value="<25%"></td><td><input value="0,0%"></td><td><input value="0,0%"></td></tr>
+   <tr><td>TIR</td><td><input value=">0,0%"></td><td><input value="0,0%"></td><td><input value="0,0%"></td></tr>
+  </table>
+ </div>
+</div></div>
 
-        function clearImage(slotId) {
-            var slot = document.getElementById(slotId);
-            var img = slot.querySelector('img');
-            var placeholder = slot.querySelector('.img-placeholder');
-            var input = slot.querySelector('input[type=file]');
-            img.src = '';
-            img.style.display = 'none';
-            placeholder.style.display = 'block';
-            slot.classList.remove('has-image');
-            input.value = '';
-            delete imageStore[slotId];
-        }
+<!-- VISAO FISICA -->
+<div class="sec"><div class="sec-t" onclick="tog(this)">Visao Fisica</div><div class="sec-b">
+ <div class="fg"><label>Texto descritivo</label><textarea id="fisico_texto" rows="2">A curva abaixo apresenta o planejamento do % previsto para os projetos aprovados no orçamento anual. Acumulamos 53,4% de execução com desvio de -4,6% em relação as atividades planejadas (58,0%).</textarea></div>
+ <div class="mn-label">Previsto (% mensal)</div>
+ <div class="mn-grid" id="gridFisPrev"></div>
+ <div class="mn-label">Real (% mensal)</div>
+ <div class="mn-grid" id="gridFisReal"></div>
+ <div class="mn-label">Linha Base 0 (% acumulado)</div>
+ <div class="mn-grid" id="gridFisLB"></div>
+ <div class="chart-box" style="margin-top:8px"><h4>Curva Geral</h4><canvas id="chartFisico" height="120"></canvas></div>
+</div></div>
 
-        // Init all fixed image slots
-        initImageSlot('slot_seg1', 'Dados gerais de Seguranca');
-        initImageSlot('slot_seg2', 'Homem-hora total');
-        initImageSlot('slot_seg3', 'Dados de Meio Ambiente');
-        initImageSlot('slot_seg4', 'Histograma mensal');
-        initImageSlot('slot_port1', 'Visao geral carteira');
-        initImageSlot('slot_port2', 'Visao geral carteira 2');
-        initImageSlot('slot_port3', 'Principais Indicadores');
-        initImageSlot('slot_fisico', 'Curva S - Visao Fisica');
-        initImageSlot('slot_financeiro', 'Curva S - Visao Financeira');
+<!-- VISAO FINANCEIRA -->
+<div class="sec"><div class="sec-t" onclick="tog(this)">Visao Financeira</div><div class="sec-b">
+ <div class="fg"><label>Texto descritivo</label><textarea id="financeiro_texto" rows="2">A curva abaixo apresenta a previsão de desembolso dos projetos para o ano totalizando 11,9USDM. A diferença apresentada em dezembro diz respeito postergação e cancelamento dos seguintes projetos: Linha de warm up CR2, nova linha de vapor de média da DEFAPA e Novo sistema de trasnfêrencia de Cl02. O desembolso realizado em maio foi de USDM 4.85.</textarea></div>
+ <div class="mn-label">Prev. Totalizado (MMUSD acum.)</div>
+ <div class="mn-grid" id="gridFinPrev"></div>
+ <div class="mn-label">Real + Previsto (MMUSD acum.)</div>
+ <div class="mn-grid" id="gridFinRP"></div>
+ <div class="mn-label">Real Acum. (MMUSD)</div>
+ <div class="mn-grid" id="gridFinReal"></div>
+ <div class="chart-box" style="margin-top:8px"><h4>Curva Financeira</h4><canvas id="chartFinanceiro" height="100"></canvas></div>
+</div></div>
 
-        // ==================== PROJECTS TABLE ====================
-        var initialProjects = [
-            { nome: "Drenagem Pluvial", status: "Atrasado", prev: "100,00%", real: "99,37%", desv: "-0,63%", valor: "28.327", realrf: "155.944", carry: "-127.617" },
-            { nome: "Queima de Hidrogênio Forno de Cal UG1", status: "Atrasado", prev: "93,63%", real: "90,00%", desv: "-3,63%", valor: "25.411", realrf: "13.583", carry: "11.828" },
-            { nome: "Defapa - Condições De Segurança Estruturais", status: "Atrasado", prev: "93,14%", real: "85,02%", desv: "-8,12%", valor: "1.422.825", realrf: "1.422.825", carry: "0" },
-            { nome: "Substituição Peneira de Cavaco 404", status: "No prazo", prev: "100,00%", real: "100,00%", desv: "0,00%", valor: "696.863", realrf: "696.863", carry: "0" },
-            { nome: "Actualización Tecnológica de Sistema de Automatización T3000 2/2", status: "Atrasado", prev: "100,00%", real: "99,61%", desv: "-0,39%", valor: "769.071", realrf: "769.071", carry: "0" },
-            { nome: "Atualização Tecnológica sistema de automação G2", status: "Atrasado", prev: "99,51%", real: "98,27%", desv: "-1,24%", valor: "310.847", realrf: "310.847", carry: "0" },
-            { nome: "Fechamento do circuito de efluente marrom", status: "Atrasado", prev: "49,10%", real: "48,08%", desv: "-1,02%", valor: "758.181", realrf: "758.181", carry: "0" },
-            { nome: "Acessibilidade Área Administrativa - Fase 3", status: "No prazo", prev: "95,66%", real: "95,70%", desv: "0,04%", valor: "334.057", realrf: "334.057", carry: "0" },
-            { nome: "Nova rede de água potável fase 2/3", status: "Atrasado", prev: "96,00%", real: "60,51%", desv: "-35,49%", valor: "17.689", realrf: "17.689", carry: "0" },
-            { nome: "Medição De Gás Natural", status: "Atrasado", prev: "99,48%", real: "92,50%", desv: "-6,98%", valor: "220.585", realrf: "220.585", carry: "0" },
-            { nome: "Substituição Da Rede De Água De Incêndio (Ug1) - Fase 1/5", status: "Atrasado", prev: "100,00%", real: "99,50%", desv: "-0,50%", valor: "196.817", realrf: "196.817", carry: "0" },
-            { nome: "Nova rede esgoto sanitário (Refeitório e edifícios administrativos) - FASE 3/4", status: "Atrasado", prev: "65,00%", real: "60,03%", desv: "-4,97%", valor: "529.519", realrf: "529.519", carry: "0" },
-            { nome: "Chuveiros de alta pressão do Kamyr", status: "Atrasado", prev: "100,00%", real: "99,18%", desv: "-0,82%", valor: "144.106", realrf: "144.106", carry: "0" },
-            { nome: "Nr-12 Proteções De Equipamentos (Fase 5.8)", status: "No prazo", prev: "40,00%", real: "40,00%", desv: "0,00%", valor: "511.580", realrf: "511.580", carry: "0" },
-            { nome: "NR-35 - Adequações de acesso (Fase 4/5)", status: "No prazo", prev: "39,66%", real: "48,80%", desv: "9,14%", valor: "506.581", realrf: "506.581", carry: "0" },
-            { nome: "Adequação do sistema de agua de serviço fase 3/8", status: "Atrasado", prev: "100,00%", real: "99,50%", desv: "-0,50%", valor: "251.287", realrf: "251.287", carry: "0" },
-            { nome: "Nova rede de esgoto sanitário", status: "Atrasado", prev: "86,50%", real: "84,50%", desv: "-2,00%", valor: "68.694", realrf: "68.694", carry: "0" }
-        ];
+<!-- PRINCIPAIS PROJETOS -->
+<div class="sec"><div class="sec-t" onclick="tog(this)">Principais Projetos</div><div class="sec-b">
+ <div class="fg"><label>Texto introdutorio</label><textarea id="proj_intro" rows="1">Abaixo a visão física e financeira dos principais projetos aprovados em andamento classificados por valor de orçamento.</textarea></div>
+ <div style="overflow-x:auto">
+  <table class="dtbl" id="projectTable">
+   <thead><tr><th rowspan="2">Projeto</th><th colspan="4">Status Fisico</th><th colspan="3">Status Financeiro (USD)</th><th rowspan="2"></th></tr>
+   <tr><th>Status</th><th>% Prev.</th><th>% Real</th><th>% Desv.</th><th>Valor Total</th><th>Real+RF</th><th>Carry Over</th></tr></thead>
+   <tbody id="projectBody"></tbody>
+  </table>
+ </div>
+ <button class="btn-a" onclick="addProjRow()">+ Adicionar projeto</button>
+</div></div>
 
-        function createProjectRow(p) {
-            return '<tr>' +
-                '<td><input type="text" value="' + p.nome + '" /></td>' +
-                '<td><select>' +
-                '<option value="No prazo"' + (p.status === 'No prazo' ? ' selected' : '') + '>No prazo</option>' +
-                '<option value="Atrasado"' + (p.status === 'Atrasado' ? ' selected' : '') + '>Atrasado</option>' +
-                '<option value="Adiantado"' + (p.status === 'Adiantado' ? ' selected' : '') + '>Adiantado</option>' +
-                '<option value="Concluido"' + (p.status === 'Concluido' ? ' selected' : '') + '>Concluido</option>' +
-                '<option value="Cancelado"' + (p.status === 'Cancelado' ? ' selected' : '') + '>Cancelado</option>' +
-                '</select></td>' +
-                '<td><input type="text" value="' + p.prev + '" /></td>' +
-                '<td><input type="text" value="' + p.real + '" /></td>' +
-                '<td><input type="text" value="' + p.desv + '" /></td>' +
-                '<td><input type="text" value="' + p.valor + '" /></td>' +
-                '<td><input type="text" value="' + p.realrf + '" /></td>' +
-                '<td><input type="text" value="' + p.carry + '" /></td>' +
-                '<td><button class="btn-remove" onclick="this.closest(\'tr\').remove()">X</button></td>' +
-                '</tr>';
-        }
+<!-- FOTOS -->
+<div class="sec"><div class="sec-t" onclick="tog(this)">Registros Fotograficos</div><div class="sec-b">
+ <div id="photoEntries"></div>
+ <button class="btn-a" onclick="addPhoto()">+ Adicionar registro</button>
+</div></div>
 
-        function addProjectRow(p) {
-            var data = p || { nome: "", status: "No prazo", prev: "", real: "", desv: "", valor: "", realrf: "", carry: "0" };
-            document.getElementById('projectBody').insertAdjacentHTML('beforeend', createProjectRow(data));
-        }
+</div><!-- /container -->
 
-        initialProjects.forEach(function(p) { addProjectRow(p); });
+<script>
+var MESES=['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
+var imageStore={};
+var charts={};
 
-        // ==================== PHOTO ENTRIES ====================
-        var photoCounter = 0;
+function tog(el){el.classList.toggle('c');el.nextElementSibling.classList.toggle('h')}
 
-        function addPhotoEntry(p) {
-            var data = p || { titulo: "", legenda: "" };
-            photoCounter++;
-            var id = 'photo_' + photoCounter;
-            var div = document.createElement('div');
-            div.className = 'photo-entry';
-            div.id = id;
-            div.innerHTML =
-                '<div class="field-row">' +
-                    '<div class="field-group" style="flex:2;">' +
-                        '<label>Titulo do projeto</label>' +
-                        '<input type="text" class="photo-title" value="' + data.titulo + '" />' +
-                    '</div>' +
-                    '<div class="field-group" style="flex:3;">' +
-                        '<label>Legenda</label>' +
-                        '<input type="text" class="photo-caption" value="' + data.legenda + '" />' +
-                    '</div>' +
-                    '<div class="field-group" style="flex:0 0 auto;">' +
-                        '<button class="btn-remove" onclick="removePhotoEntry(\'' + id + '\')" style="margin-bottom:4px;">X</button>' +
-                    '</div>' +
-                '</div>' +
-                '<div class="img-upload-area">' +
-                    '<div class="img-slot" id="slot_' + id + '"></div>' +
-                '</div>';
-            document.getElementById('photoEntries').appendChild(div);
-            initImageSlot('slot_' + id, 'Foto');
-        }
+// ========== MONTHLY GRID BUILDER ==========
+function buildGrid(containerId,values,onChange){
+ var c=document.getElementById(containerId);
+ c.innerHTML='';
+ MESES.forEach(function(m,i){
+  var lbl=document.createElement('label');lbl.textContent=m;c.appendChild(lbl);
+ });
+ values.forEach(function(v,i){
+  var inp=document.createElement('input');
+  inp.type='text';inp.value=v;inp.dataset.idx=i;
+  inp.addEventListener('change',onChange);
+  c.appendChild(inp);
+ });
+}
+function readGrid(containerId){
+ var inputs=document.querySelectorAll('#'+containerId+' input');
+ var vals=[];inputs.forEach(function(inp){vals.push(parseFloat(inp.value.replace(',','.'))||0)});
+ return vals;
+}
 
-        function removePhotoEntry(id) {
-            var el = document.getElementById(id);
-            if (el) {
-                delete imageStore['slot_' + id];
-                el.remove();
-            }
-        }
+// ========== INIT MONTHLY GRIDS ==========
+var dataHist=[272,212,178,171,173,0,0,0,0,0,0,0];
+var dataHht=[45,28,27,34,33.5,0,0,0,0,0,0,0];
+var dataFisPrev=[6.09,34.81,9.90,8.80,4.88,5.43,5.87,5.06,7.32,5.12,3.59,3.13];
+var dataFisReal=[6.09,31.21,9.34,3.53,3.21,0,0,0,0,0,0,0];
+var dataFisLB=[6.09,40.90,50.80,59.60,64.48,69.91,75.78,80.84,88.16,93.28,96.87,100];
+var dataFinPrev=[0.75,2.17,3.98,5.27,6.55,7.40,8.17,8.63,9.33,10.22,10.92,11.90];
+var dataFinRP=[0.75,2.18,3.50,4.24,4.85,5.55,6.74,7.93,8.92,9.82,10.91,11.89];
+var dataFinReal=[0.75,2.18,3.50,4.24,4.85,0,0,0,0,0,0,0];
 
-        var initialPhotos = [
-            { titulo: "Central de Resíduos Horto Santa Izabel", legenda: "Terraplanagem" },
-            { titulo: "Instituto CMPC", legenda: "Concretagem da laje e regularização do concreto finalizados" },
-            { titulo: "Recuperação de Água - Planta de Hidrogênio", legenda: "Comissionamento da linha 4'' e finalização do projeto" },
-            { titulo: "Difusores TB 2 e TB 3", legenda: "Desmontagem e içamento das unidades hidráulicas dos TBS" }
-        ];
-        initialPhotos.forEach(function(p) { addPhotoEntry(p); });
+buildGrid('gridHist',dataHist,function(){updateCharts()});
+buildGrid('gridHht',dataHht.map(function(v){return v.toString().replace('.',',')}),function(){updateCharts()});
+buildGrid('gridFisPrev',dataFisPrev.map(function(v){return v.toFixed(2).replace('.',',')}),function(){updateCharts()});
+buildGrid('gridFisReal',dataFisReal.map(function(v){return v.toFixed(2).replace('.',',')}),function(){updateCharts()});
+buildGrid('gridFisLB',dataFisLB.map(function(v){return v.toFixed(2).replace('.',',')}),function(){updateCharts()});
+buildGrid('gridFinPrev',dataFinPrev.map(function(v){return v.toFixed(2).replace('.',',')}),function(){updateCharts()});
+buildGrid('gridFinRP',dataFinRP.map(function(v){return v.toFixed(2).replace('.',',')}),function(){updateCharts()});
+buildGrid('gridFinReal',dataFinReal.map(function(v){return v.toFixed(2).replace('.',',')}),function(){updateCharts()});
 
-        function toggleSection(el) {
-            el.classList.toggle('collapsed');
-            el.nextElementSibling.classList.toggle('hidden');
-        }
+// ========== DONUT CHARTS DATA ==========
+var donutData={
+ status:{labels:['Aprovado','Pendente apr.','Especial','Cancelado'],values:[53,5,3,2],colors:['#005a32','#4caf50','#c0ca33','#bdbdbd']},
+ origen:{labels:['Carry Over','Novo','Plurianual'],values:[40,12,1],colors:['#005a32','#43a047','#a5d6a7']},
+ gestion:{labels:['Gerencia de Seg.','Recuperacao','Gerencia MA','Areas Gerais','Gerencia','Producao','Gerencia de...'],values:[13,11,7,6,4,4,2],colors:['#005a32','#1b5e20','#2e7d32','#388e3c','#43a047','#66bb6a','#a5d6a7']},
+ naturaleza:{labels:['Continuidade Op.','(Em branco)','Seguranca','Meio Ambiente','Sustentabilidade'],values:[15,13,12,8,2],colors:['#005a32','#2e7d32','#43a047','#66bb6a','#a5d6a7']}
+};
 
-        // ==================== GERAR WORD ====================
-        function gerarWord() {
-            var btn = document.getElementById('btnDownload');
-            btn.disabled = true;
-            btn.textContent = 'Gerando...';
+function buildDonutInputs(containerId,key){
+ var c=document.getElementById(containerId);c.innerHTML='';
+ donutData[key].labels.forEach(function(l,i){
+  var div=document.createElement('div');div.className='di';
+  div.innerHTML='<span>'+l+':</span><input type="number" value="'+donutData[key].values[i]+'" data-key="'+key+'" data-idx="'+i+'" onchange="updDonut(this)">';
+  c.appendChild(div);
+ });
+}
+function updDonut(inp){
+ var k=inp.dataset.key,i=parseInt(inp.dataset.idx);
+ donutData[k].values[i]=parseInt(inp.value)||0;
+ updateCharts();
+}
+buildDonutInputs('diStatus','status');
+buildDonutInputs('diOrigen','origen');
+buildDonutInputs('diGestion','gestion');
+buildDonutInputs('diNaturaleza','naturaleza');
 
-            try {
-                var D = docx;
-                var mes = document.getElementById('mesRef').value;
-                var ano = document.getElementById('anoRef').value;
-                var rev = document.getElementById('revRef').value;
-                var mesCapital = mes.charAt(0).toUpperCase() + mes.slice(1);
+// ========== CREATE CHARTS ==========
+function createCharts(){
+ // Histograma
+ charts.hist=new Chart(document.getElementById('chartHist'),{
+  type:'bar',
+  data:{labels:MESES,datasets:[{label:'Efetivo Total',data:dataHist.slice(),backgroundColor:'#2e7d32',borderRadius:3}]},
+  options:{responsive:true,plugins:{legend:{display:true,position:'bottom',labels:{font:{size:10}}},datalabels:false},scales:{y:{beginAtZero:true,ticks:{font:{size:9}}},x:{ticks:{font:{size:9}}}}}
+ });
 
-                var GREEN = "005A32";
-                var WHITE = "FFFFFF";
+ // Hht
+ charts.hht=new Chart(document.getElementById('chartHht'),{
+  type:'bar',
+  data:{labels:MESES,datasets:[
+   {label:'Hht (mil)',data:dataHht.slice(),backgroundColor:'#2e7d32',borderRadius:3,order:2},
+   {label:'Hht (mil) AC',data:calcAcum(dataHht),type:'line',borderColor:'#1b5e20',backgroundColor:'#1b5e20',pointRadius:4,pointBackgroundColor:'#8bc34a',borderWidth:2,order:1,yAxisID:'y1'}
+  ]},
+  options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:10}}}},scales:{y:{beginAtZero:true,position:'left',ticks:{font:{size:9}}},y1:{beginAtZero:true,position:'right',grid:{drawOnChartArea:false},ticks:{font:{size:9}}},x:{ticks:{font:{size:9}}}}}
+ });
 
-                function makeHeading(text) {
-                    return new D.Paragraph({
-                        spacing: { before: 300, after: 150 },
-                        children: [
-                            new D.TextRun({ text: text, bold: true, size: 30, color: GREEN, font: "Calibri" })
-                        ]
-                    });
-                }
+ // Donuts
+ ['status','origen','gestion','naturaleza'].forEach(function(k){
+  var canvasId='chart'+k.charAt(0).toUpperCase()+k.slice(1);
+  charts[k]=new Chart(document.getElementById(canvasId),{
+   type:'doughnut',
+   data:{labels:donutData[k].labels,datasets:[{data:donutData[k].values.slice(),backgroundColor:donutData[k].colors}]},
+   options:{responsive:true,cutout:'60%',plugins:{legend:{position:'bottom',labels:{font:{size:9}}}}}
+  });
+ });
 
-                function makePara(text) {
-                    return new D.Paragraph({
-                        spacing: { after: 120 },
-                        alignment: D.AlignmentType.JUSTIFIED,
-                        children: [
-                            new D.TextRun({ text: text, size: 20, font: "Calibri" })
-                        ]
-                    });
-                }
+ // Curva Geral Fisica
+ var fisPrev=readGrid('gridFisPrev'),fisReal=readGrid('gridFisReal'),fisLB=readGrid('gridFisLB');
+ var fisPrevAc=calcAcum(fisPrev),fisRealAc=calcAcum(fisReal);
+ charts.fisico=new Chart(document.getElementById('chartFisico'),{
+  type:'bar',
+  data:{labels:MESES,datasets:[
+   {label:'Previsto',data:fisPrev,backgroundColor:'#1b5e20',borderRadius:2,order:3},
+   {label:'Real',data:fisReal,backgroundColor:'#66bb6a',borderRadius:2,order:3},
+   {label:'LB 0',data:fisLB,type:'line',borderColor:'#9e9e9e',pointRadius:2,borderWidth:1.5,borderDash:[4,3],order:1,fill:false},
+   {label:'Previsto Ac',data:fisPrevAc,type:'line',borderColor:'#8bc34a',pointRadius:2,borderWidth:2,order:1,fill:false},
+   {label:'Real Ac',data:fisRealAc,type:'line',borderColor:'#1b5e20',pointRadius:3,pointBackgroundColor:'#1b5e20',borderWidth:2.5,order:1,fill:false}
+  ]},
+  options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:9}}}},scales:{y:{beginAtZero:true,max:100,ticks:{font:{size:9},callback:function(v){return v.toFixed(0)}}},x:{ticks:{font:{size:9}}}}}
+ });
 
-                function makeImage(slotId, maxW) {
-                    var imgData = imageStore[slotId];
-                    if (!imgData) return null;
-                    var w = maxW || 600;
-                    var ratio = imgData.height / imgData.width;
-                    var h = Math.round(w * ratio);
-                    return new D.Paragraph({
-                        spacing: { after: 120 },
-                        alignment: D.AlignmentType.CENTER,
-                        children: [
-                            new D.ImageRun({
-                                data: imgData.data,
-                                transformation: { width: w, height: h },
-                                type: imgData.type === 'png' ? D.ImageType ? D.ImageType.PNG : undefined : undefined
-                            })
-                        ]
-                    });
-                }
+ // Curva Financeira
+ var finPrev=readGrid('gridFinPrev'),finRP=readGrid('gridFinRP'),finReal=readGrid('gridFinReal');
+ charts.financeiro=new Chart(document.getElementById('chartFinanceiro'),{
+  type:'line',
+  data:{labels:MESES,datasets:[
+   {label:'Prev. Totalizado',data:finPrev,borderColor:'#3f51b5',pointRadius:2,borderWidth:2,fill:false},
+   {label:'Real + Previsto',data:finRP,borderColor:'#9e9e9e',pointRadius:2,borderWidth:1.5,fill:false},
+   {label:'Real Acum.',data:finReal,borderColor:'#1b5e20',pointRadius:3,pointBackgroundColor:'#1b5e20',borderWidth:2.5,fill:false}
+  ]},
+  options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:9}}}},scales:{y:{beginAtZero:true,ticks:{font:{size:9}}},x:{ticks:{font:{size:9}}}}}
+ });
+}
 
-                function hCell(text, opts) {
-                    var o = opts || {};
-                    var cellOpts = {
-                        shading: { type: D.ShadingType.SOLID, color: GREEN },
-                        verticalAlign: D.VerticalAlign.CENTER,
-                        children: [
-                            new D.Paragraph({
-                                alignment: D.AlignmentType.CENTER,
-                                children: [
-                                    new D.TextRun({ text: text, bold: true, size: 14, color: WHITE, font: "Calibri" })
-                                ]
-                            })
-                        ]
-                    };
-                    if (o.rowSpan) cellOpts.rowSpan = o.rowSpan;
-                    if (o.columnSpan) cellOpts.columnSpan = o.columnSpan;
-                    return new D.TableCell(cellOpts);
-                }
+function calcAcum(arr){
+ var ac=[];var sum=0;
+ arr.forEach(function(v){sum+=v;ac.push(parseFloat(sum.toFixed(2)))});
+ return ac;
+}
 
-                function dCell(text, bold, align) {
-                    return new D.TableCell({
-                        verticalAlign: D.VerticalAlign.CENTER,
-                        children: [
-                            new D.Paragraph({
-                                alignment: align || D.AlignmentType.CENTER,
-                                children: [
-                                    new D.TextRun({ text: text, bold: !!bold, size: 14, font: "Calibri" })
-                                ]
-                            })
-                        ]
-                    });
-                }
+function updateCharts(){
+ var h=readGrid('gridHist');
+ charts.hist.data.datasets[0].data=h;charts.hist.update();
 
-                // Collect text
-                var sumTexts = [];
-                for (var i = 1; i <= 11; i++) {
-                    sumTexts.push(document.getElementById('sum_p' + i).value);
-                }
-                var segIntro = document.getElementById('seg_intro').value;
-                var portIntro = document.getElementById('port_intro').value;
-                var fisicoTexto = document.getElementById('fisico_texto').value;
-                var financeiroTexto = document.getElementById('financeiro_texto').value;
-                var projIntro = document.getElementById('proj_intro').value;
+ var hht=readGrid('gridHht');
+ charts.hht.data.datasets[0].data=hht;
+ charts.hht.data.datasets[1].data=calcAcum(hht);charts.hht.update();
 
-                // Collect projects
-                var rows = document.querySelectorAll('#projectBody tr');
-                var projects = [];
-                rows.forEach(function(row) {
-                    var inputs = row.querySelectorAll('input');
-                    var select = row.querySelector('select');
-                    projects.push({
-                        nome: inputs[0].value,
-                        status: select.value,
-                        prev: inputs[1].value,
-                        real: inputs[2].value,
-                        desv: inputs[3].value,
-                        valor: inputs[4].value,
-                        realrf: inputs[5].value,
-                        carry: inputs[6].value
-                    });
-                });
+ ['status','origen','gestion','naturaleza'].forEach(function(k){
+  charts[k].data.datasets[0].data=donutData[k].values.slice();charts[k].update();
+ });
 
-                // Build table
-                var tRow1 = new D.TableRow({
-                    tableHeader: true,
-                    children: [
-                        hCell("Projeto", { rowSpan: 2 }),
-                        hCell("Status Fisico do projeto", { columnSpan: 4 }),
-                        hCell("Status Financeiro no ano (USD)", { columnSpan: 3 })
-                    ]
-                });
-                var tRow2 = new D.TableRow({
-                    tableHeader: true,
-                    children: [
-                        hCell("Status"), hCell("% Prev."), hCell("% Real"), hCell("% Desv."),
-                        hCell("Valor Total"), hCell("Real + RF"), hCell("Carry Over / Saving")
-                    ]
-                });
-                var tDataRows = projects.map(function(p) {
-                    return new D.TableRow({
-                        children: [
-                            dCell(p.nome, false, D.AlignmentType.LEFT),
-                            dCell(p.status, true),
-                            dCell(p.prev), dCell(p.real), dCell(p.desv),
-                            dCell(p.valor), dCell(p.realrf), dCell(p.carry)
-                        ]
-                    });
-                });
-                var projTable = new D.Table({
-                    width: { size: 100, type: D.WidthType.PERCENTAGE },
-                    rows: [tRow1, tRow2].concat(tDataRows)
-                });
+ var fp=readGrid('gridFisPrev'),fr=readGrid('gridFisReal'),fl=readGrid('gridFisLB');
+ charts.fisico.data.datasets[0].data=fp;
+ charts.fisico.data.datasets[1].data=fr;
+ charts.fisico.data.datasets[2].data=fl;
+ charts.fisico.data.datasets[3].data=calcAcum(fp);
+ charts.fisico.data.datasets[4].data=calcAcum(fr);
+ charts.fisico.update();
 
-                // Build document children
-                var children = [];
+ var fnp=readGrid('gridFinPrev'),fnrp=readGrid('gridFinRP'),fnr=readGrid('gridFinReal');
+ charts.financeiro.data.datasets[0].data=fnp;
+ charts.financeiro.data.datasets[1].data=fnrp;
+ charts.financeiro.data.datasets[2].data=fnr;
+ charts.financeiro.update();
+}
 
-                // Sumario
-                children.push(makeHeading("Sumário Executivo"));
-                children.push(makePara("Apresentamos o resumo das atividades relacionadas aos projetos CAPEX sob gestão da área de engenharia da Unidade Guaíba, referente ao mês de " + mes + " de " + ano + "."));
-                sumTexts.forEach(function(t) { if (t.trim()) children.push(makePara(t)); });
+createCharts();
 
-                // Seguranca
-                children.push(makeHeading("Segurança e meio ambiente"));
-                children.push(makePara(segIntro));
-                var segImgs = ['slot_seg1', 'slot_seg2', 'slot_seg3', 'slot_seg4'];
-                segImgs.forEach(function(s) {
-                    var img = makeImage(s, 550);
-                    if (img) children.push(img);
-                });
+// ========== PROJECTS TABLE ==========
+var initProj=[
+ {n:"Drenagem Pluvial",s:"Atrasado",p:"100,00%",r:"99,37%",d:"-0,63%",v:"28.327",rf:"155.944",c:"-127.617"},
+ {n:"Queima de Hidrogênio Forno de Cal UG1",s:"Atrasado",p:"93,63%",r:"90,00%",d:"-3,63%",v:"25.411",rf:"13.583",c:"11.828"},
+ {n:"Defapa - Condições De Segurança Estruturais",s:"Atrasado",p:"93,14%",r:"85,02%",d:"-8,12%",v:"1.422.825",rf:"1.422.825",c:"0"},
+ {n:"Substituição Peneira de Cavaco 404",s:"No prazo",p:"100,00%",r:"100,00%",d:"0,00%",v:"696.863",rf:"696.863",c:"0"},
+ {n:"Actualización Tecnológica T3000 2/2",s:"Atrasado",p:"100,00%",r:"99,61%",d:"-0,39%",v:"769.071",rf:"769.071",c:"0"},
+ {n:"Atualização Tecnológica automação G2",s:"Atrasado",p:"99,51%",r:"98,27%",d:"-1,24%",v:"310.847",rf:"310.847",c:"0"},
+ {n:"Fechamento circuito efluente marrom",s:"Atrasado",p:"49,10%",r:"48,08%",d:"-1,02%",v:"758.181",rf:"758.181",c:"0"},
+ {n:"Acessibilidade Área Admin. - Fase 3",s:"No prazo",p:"95,66%",r:"95,70%",d:"0,04%",v:"334.057",rf:"334.057",c:"0"},
+ {n:"Nova rede de água potável fase 2/3",s:"Atrasado",p:"96,00%",r:"60,51%",d:"-35,49%",v:"17.689",rf:"17.689",c:"0"},
+ {n:"Medição De Gás Natural",s:"Atrasado",p:"99,48%",r:"92,50%",d:"-6,98%",v:"220.585",rf:"220.585",c:"0"},
+ {n:"Subst. Rede Água Incêndio (Ug1) 1/5",s:"Atrasado",p:"100,00%",r:"99,50%",d:"-0,50%",v:"196.817",rf:"196.817",c:"0"},
+ {n:"Nova rede esgoto sanitário FASE 3/4",s:"Atrasado",p:"65,00%",r:"60,03%",d:"-4,97%",v:"529.519",rf:"529.519",c:"0"},
+ {n:"Chuveiros alta pressão do Kamyr",s:"Atrasado",p:"100,00%",r:"99,18%",d:"-0,82%",v:"144.106",rf:"144.106",c:"0"},
+ {n:"Nr-12 Proteções Equipamentos (5.8)",s:"No prazo",p:"40,00%",r:"40,00%",d:"0,00%",v:"511.580",rf:"511.580",c:"0"},
+ {n:"NR-35 Adequações de acesso (4/5)",s:"No prazo",p:"39,66%",r:"48,80%",d:"9,14%",v:"506.581",rf:"506.581",c:"0"},
+ {n:"Adequação agua de serviço fase 3/8",s:"Atrasado",p:"100,00%",r:"99,50%",d:"-0,50%",v:"251.287",rf:"251.287",c:"0"},
+ {n:"Nova rede de esgoto sanitário",s:"Atrasado",p:"86,50%",r:"84,50%",d:"-2,00%",v:"68.694",rf:"68.694",c:"0"}
+];
 
-                // Portfolio
-                children.push(makeHeading("Portfólio de Projetos"));
-                children.push(makePara(portIntro));
-                ['slot_port1', 'slot_port2', 'slot_port3'].forEach(function(s) {
-                    var img = makeImage(s, 600);
-                    if (img) children.push(img);
-                });
+function addProjRow(p){
+ var d=p||{n:"",s:"No prazo",p:"",r:"",d:"",v:"",rf:"",c:"0"};
+ var opts=['No prazo','Atrasado','Adiantado','Concluido','Cancelado'];
+ var sel=opts.map(function(o){return '<option'+(o===d.s?' selected':'')+'>'+o+'</option>'}).join('');
+ document.getElementById('projectBody').insertAdjacentHTML('beforeend',
+  '<tr><td><input value="'+d.n+'"></td><td><select>'+sel+'</select></td>'+
+  '<td><input value="'+d.p+'"></td><td><input value="'+d.r+'"></td><td><input value="'+d.d+'"></td>'+
+  '<td><input value="'+d.v+'"></td><td><input value="'+d.rf+'"></td><td><input value="'+d.c+'"></td>'+
+  '<td><button class="btn-r" onclick="this.closest(\'tr\').remove()">X</button></td></tr>');
+}
+initProj.forEach(function(p){addProjRow(p)});
 
-                // Visao Fisica
-                children.push(makeHeading("Visão Física"));
-                children.push(makePara(fisicoTexto));
-                var imgFis = makeImage('slot_fisico', 600);
-                if (imgFis) children.push(imgFis);
+// ========== PHOTOS ==========
+var photoN=0;
+function addPhoto(p){
+ var d=p||{titulo:"",legenda:""};photoN++;var id='ph_'+photoN;
+ var div=document.createElement('div');div.className='photo-entry';div.id=id;
+ div.innerHTML='<div class="fr" style="align-items:end"><div class="fg" style="flex:2"><label>Titulo</label><input type="text" class="ph-t" value="'+d.titulo+'"></div><div class="fg" style="flex:3"><label>Legenda</label><input type="text" class="ph-c" value="'+d.legenda+'"></div><div class="fg" style="flex:0 0 auto"><button class="btn-r" onclick="remPhoto(\''+id+'\')">X</button></div></div><div class="img-slot" id="slot_'+id+'"></div>';
+ document.getElementById('photoEntries').appendChild(div);
+ initSlot('slot_'+id);
+}
+function remPhoto(id){delete imageStore['slot_'+id];document.getElementById(id).remove()}
+function initSlot(slotId){
+ var s=document.getElementById(slotId);if(!s)return;
+ s.innerHTML='<div style="color:#aaa;font-size:11px;padding:15px">Clique para selecionar imagem</div><img style="display:none"><button class="btn-clear" onclick="clrImg(\''+slotId+'\')" title="Remover">X</button><input type="file" accept="image/*" onchange="handleImg(\''+slotId+'\',this)"><br><button class="btn-choose" onclick="document.querySelector(\'#'+slotId+' input[type=file]\').click()">Escolher imagem</button>';
+}
+function handleImg(sid,inp){
+ if(!inp.files||!inp.files[0])return;var file=inp.files[0];var s=document.getElementById(sid);
+ var r=new FileReader();r.onload=function(e){
+  var img=s.querySelector('img');img.src=e.target.result;img.style.display='block';
+  s.querySelector('div').style.display='none';s.classList.add('has-image');
+  var r2=new FileReader();r2.onload=function(ev){
+   var tmp=new Image();tmp.onload=function(){imageStore[sid]={data:ev.target.result,w:tmp.naturalWidth,h:tmp.naturalHeight}};tmp.src=e.target.result;
+  };r2.readAsArrayBuffer(file);
+ };r.readAsDataURL(file);
+}
+function clrImg(sid){var s=document.getElementById(sid);s.querySelector('img').src='';s.querySelector('img').style.display='none';s.querySelector('div').style.display='block';s.classList.remove('has-image');s.querySelector('input[type=file]').value='';delete imageStore[sid]}
 
-                // Visao Financeira
-                children.push(makeHeading("Visão Financeira"));
-                children.push(makePara(financeiroTexto));
-                var imgFin = makeImage('slot_financeiro', 600);
-                if (imgFin) children.push(imgFin);
+[{titulo:"Central de Resíduos Horto Santa Izabel",legenda:"Terraplanagem"},
+ {titulo:"Instituto CMPC",legenda:"Concretagem da laje e regularização do concreto finalizados"},
+ {titulo:"Recuperação de Água - Planta de Hidrogênio",legenda:"Comissionamento da linha 4'' e finalização do projeto"},
+ {titulo:"Difusores TB 2 e TB 3",legenda:"Desmontagem e içamento das unidades hidráulicas dos TBS"}
+].forEach(function(p){addPhoto(p)});
 
-                // Principais Projetos
-                children.push(makeHeading("Principais projetos"));
-                children.push(makePara(projIntro));
-                children.push(new D.Paragraph({ spacing: { after: 100 }, children: [] }));
-                children.push(projTable);
+// ========== CANVAS TO ARRAYBUFFER ==========
+function canvasToAB(canvas){
+ var url=canvas.toDataURL('image/png');
+ var bin=atob(url.split(',')[1]);
+ var buf=new ArrayBuffer(bin.length);var view=new Uint8Array(buf);
+ for(var i=0;i<bin.length;i++)view[i]=bin.charCodeAt(i);
+ return buf;
+}
 
-                // Registros Fotograficos
-                var photoEntries = document.querySelectorAll('.photo-entry');
-                if (photoEntries.length > 0) {
-                    children.push(makeHeading("Registros fotográficos"));
-                    photoEntries.forEach(function(entry) {
-                        var titulo = entry.querySelector('.photo-title').value;
-                        var legenda = entry.querySelector('.photo-caption').value;
-                        var slotId = entry.querySelector('.img-slot').id;
-                        if (titulo.trim()) {
-                            children.push(new D.Paragraph({
-                                spacing: { before: 200, after: 60 },
-                                children: [
-                                    new D.TextRun({ text: titulo, bold: true, size: 18, font: "Calibri" })
-                                ]
-                            }));
-                            if (legenda.trim()) {
-                                children.push(new D.Paragraph({
-                                    spacing: { after: 60 },
-                                    children: [
-                                        new D.TextRun({ text: legenda, size: 16, font: "Calibri", italics: true })
-                                    ]
-                                }));
-                            }
-                            var imgPhoto = makeImage(slotId, 500);
-                            if (imgPhoto) children.push(imgPhoto);
-                        }
-                    });
-                }
+// ========== GERAR WORD ==========
+function gerarWord(){
+ var btn=document.getElementById('btnDl');btn.disabled=true;btn.textContent='Gerando...';
+ try{
+  var D=docx;
+  var mes=document.getElementById('mesRef').value;
+  var ano=document.getElementById('anoRef').value;
+  var rev=document.getElementById('revRef').value;
+  var mesC=mes.charAt(0).toUpperCase()+mes.slice(1);
+  var GREEN="005A32",WHITE="FFFFFF";
 
-                var doc = new D.Document({
-                    styles: {
-                        default: {
-                            document: {
-                                run: { font: "Calibri", size: 20 }
-                            }
-                        }
-                    },
-                    sections: [{
-                        properties: {
-                            page: {
-                                margin: { top: 1440, right: 1080, bottom: 1440, left: 1080 }
-                            }
-                        },
-                        headers: {
-                            default: new D.Header({
-                                children: [
-                                    new D.Paragraph({
-                                        alignment: D.AlignmentType.RIGHT,
-                                        children: [
-                                            new D.TextRun({
-                                                text: "Engenharia - Sumário Executivo Guaíba - " + mesCapital + "/" + ano,
-                                                size: 16, color: "888888", font: "Calibri"
-                                            })
-                                        ]
-                                    })
-                                ]
-                            })
-                        },
-                        footers: {
-                            default: new D.Footer({
-                                children: [
-                                    new D.Paragraph({
-                                        alignment: D.AlignmentType.CENTER,
-                                        children: [
-                                            new D.TextRun({ text: "CMPC - Unidade Guaíba | ", size: 14, color: "888888", font: "Calibri" }),
-                                            new D.TextRun({ children: [D.PageNumber.CURRENT], size: 14, color: "888888", font: "Calibri" })
-                                        ]
-                                    })
-                                ]
-                            })
-                        },
-                        children: children
-                    }]
-                });
+  function heading(t){return new D.Paragraph({spacing:{before:300,after:150},children:[new D.TextRun({text:t,bold:true,size:30,color:GREEN,font:"Calibri"})]})}
+  function para(t){return new D.Paragraph({spacing:{after:120},alignment:D.AlignmentType.JUSTIFIED,children:[new D.TextRun({text:t,size:20,font:"Calibri"})]})}
+  function chartImg(canvasId,w){
+   var cv=document.getElementById(canvasId);if(!cv)return null;
+   var ab=canvasToAB(cv);var ratio=cv.height/cv.width;var wd=w||580;var ht=Math.round(wd*ratio);
+   return new D.Paragraph({spacing:{after:120},alignment:D.AlignmentType.CENTER,children:[new D.ImageRun({data:ab,transformation:{width:wd,height:ht}})]});
+  }
+  function photoImg(sid,w){
+   var d=imageStore[sid];if(!d)return null;
+   var wd=w||480;var ht=Math.round(wd*(d.h/d.w));
+   return new D.Paragraph({spacing:{after:120},alignment:D.AlignmentType.CENTER,children:[new D.ImageRun({data:d.data,transformation:{width:wd,height:ht}})]});
+  }
+  function hc(t,o){var opts={shading:{type:D.ShadingType.SOLID,color:GREEN},verticalAlign:D.VerticalAlign.CENTER,children:[new D.Paragraph({alignment:D.AlignmentType.CENTER,children:[new D.TextRun({text:t,bold:true,size:14,color:WHITE,font:"Calibri"})]})]};if(o&&o.rowSpan)opts.rowSpan=o.rowSpan;if(o&&o.columnSpan)opts.columnSpan=o.columnSpan;return new D.TableCell(opts)}
+  function dc(t,b,a){return new D.TableCell({verticalAlign:D.VerticalAlign.CENTER,children:[new D.Paragraph({alignment:a||D.AlignmentType.CENTER,children:[new D.TextRun({text:t,bold:!!b,size:14,font:"Calibri"})]})]})}
 
-                var nomeArquivo = "Engenharia_Sumario Executivo Guaiba_" + mesCapital + "_" + ano + "_rev" + rev + ".docx";
+  // Collect texts
+  var st=[];for(var i=1;i<=11;i++)st.push(document.getElementById('sum_p'+i).value);
+  var segI=document.getElementById('seg_intro').value;
+  var portI=document.getElementById('port_intro').value;
+  var fisT=document.getElementById('fisico_texto').value;
+  var finT=document.getElementById('financeiro_texto').value;
+  var projI=document.getElementById('proj_intro').value;
 
-                D.Packer.toBlob(doc).then(function(blob) {
-                    saveAs(blob, nomeArquivo);
-                    btn.disabled = false;
-                    btn.textContent = 'Baixar Word';
-                }).catch(function(err) {
-                    alert('Erro ao gerar Word: ' + err.message);
-                    console.error(err);
-                    btn.disabled = false;
-                    btn.textContent = 'Baixar Word';
-                });
+  // Build safety table for Word
+  var segRows=[new D.TableRow({children:[hc('Seguridad y Medio Ambiente'),hc('Meta'),hc('Ano (cc)')]})];
+  var segTbl=document.getElementById('tblSeg');
+  for(var r=1;r<segTbl.rows.length;r++){
+   var cells=segTbl.rows[r].cells;
+   segRows.push(new D.TableRow({children:[dc(cells[0].textContent,false,D.AlignmentType.LEFT),dc(cells[1].querySelector('input').value),dc(cells[2].querySelector('input').value)]}));
+  }
+  var segTable=new D.Table({width:{size:100,type:D.WidthType.PERCENTAGE},rows:segRows});
 
-            } catch(err) {
-                alert('Erro: ' + err.message + '\n\nVerifique o console (F12) para detalhes.');
-                console.error(err);
-                btn.disabled = false;
-                btn.textContent = 'Baixar Word';
-            }
-        }
-    </script>
+  // Build KPI table for Word
+  var kpiRows=[new D.TableRow({children:[hc('Portafolio Proyectos'),hc('Meta'),hc('Mes'),hc('Ano (acc)')]})];
+  var kpiTbl=document.getElementById('tblKpi');
+  for(var r=1;r<kpiTbl.rows.length;r++){
+   var cells=kpiTbl.rows[r].cells;
+   var inps=[];cells[0].querySelectorAll('input').forEach(function(x){inps.push(x)});
+   // first cell is text, rest are inputs
+   kpiRows.push(new D.TableRow({children:[
+    dc(cells[0].textContent.trim(),false,D.AlignmentType.LEFT),
+    dc(cells[1].querySelector('input').value),
+    dc(cells[2].querySelector('input').value),
+    dc(cells[3].querySelector('input').value)
+   ]}));
+  }
+  var kpiTable=new D.Table({width:{size:100,type:D.WidthType.PERCENTAGE},rows:kpiRows});
+
+  // Build projects table for Word
+  var pRows=[
+   new D.TableRow({tableHeader:true,children:[hc('Projeto',{rowSpan:2}),hc('Status Fisico',{columnSpan:4}),hc('Status Financeiro (USD)',{columnSpan:3})]}),
+   new D.TableRow({tableHeader:true,children:[hc('Status'),hc('% Prev.'),hc('% Real'),hc('% Desv.'),hc('Valor Total'),hc('Real+RF'),hc('Carry Over')]})
+  ];
+  document.querySelectorAll('#projectBody tr').forEach(function(row){
+   var inp=row.querySelectorAll('input');var sel=row.querySelector('select');
+   pRows.push(new D.TableRow({children:[dc(inp[0].value,false,D.AlignmentType.LEFT),dc(sel.value,true),dc(inp[1].value),dc(inp[2].value),dc(inp[3].value),dc(inp[4].value),dc(inp[5].value),dc(inp[6].value)]}));
+  });
+  var projTable=new D.Table({width:{size:100,type:D.WidthType.PERCENTAGE},rows:pRows});
+
+  // Assemble document
+  var ch=[];
+  ch.push(heading("Sumário Executivo"));
+  ch.push(para("Apresentamos o resumo das atividades relacionadas aos projetos CAPEX sob gestão da área de engenharia da Unidade Guaíba, referente ao mês de "+mes+" de "+ano+"."));
+  st.forEach(function(t){if(t.trim())ch.push(para(t))});
+
+  ch.push(heading("Segurança e meio ambiente"));
+  ch.push(para(segI));
+  ch.push(segTable);
+  ch.push(new D.Paragraph({spacing:{after:60},children:[]}));
+  var ci=chartImg('chartHht',560);if(ci)ch.push(ci);
+  ci=chartImg('chartHist',560);if(ci)ch.push(ci);
+
+  ch.push(heading("Portfólio de Projetos"));
+  ch.push(para(portI));
+  ci=chartImg('chartStatus',260);if(ci)ch.push(ci);
+  ci=chartImg('chartOrigen',260);if(ci)ch.push(ci);
+  ci=chartImg('chartGestion',260);if(ci)ch.push(ci);
+  ci=chartImg('chartNaturaleza',260);if(ci)ch.push(ci);
+  ch.push(kpiTable);
+
+  ch.push(heading("Visão Física"));
+  ch.push(para(fisT));
+  ci=chartImg('chartFisico',580);if(ci)ch.push(ci);
+
+  ch.push(heading("Visão Financeira"));
+  ch.push(para(finT));
+  ci=chartImg('chartFinanceiro',580);if(ci)ch.push(ci);
+
+  ch.push(heading("Principais projetos"));
+  ch.push(para(projI));
+  ch.push(new D.Paragraph({spacing:{after:80},children:[]}));
+  ch.push(projTable);
+
+  // Photos
+  var pes=document.querySelectorAll('.photo-entry');
+  if(pes.length>0){
+   ch.push(heading("Registros fotográficos"));
+   pes.forEach(function(e){
+    var t=e.querySelector('.ph-t').value,l=e.querySelector('.ph-c').value,sid=e.querySelector('.img-slot').id;
+    if(t.trim()){
+     ch.push(new D.Paragraph({spacing:{before:200,after:60},children:[new D.TextRun({text:t,bold:true,size:18,font:"Calibri"})]}));
+     if(l.trim())ch.push(new D.Paragraph({spacing:{after:60},children:[new D.TextRun({text:l,size:16,font:"Calibri",italics:true})]}));
+     var pi=photoImg(sid,460);if(pi)ch.push(pi);
+    }
+   });
+  }
+
+  var doc=new D.Document({
+   styles:{default:{document:{run:{font:"Calibri",size:20}}}},
+   sections:[{
+    properties:{page:{margin:{top:1440,right:1080,bottom:1440,left:1080}}},
+    headers:{default:new D.Header({children:[new D.Paragraph({alignment:D.AlignmentType.RIGHT,children:[new D.TextRun({text:"Engenharia - Sumário Executivo Guaíba - "+mesC+"/"+ano,size:16,color:"888888",font:"Calibri"})]})]})},
+    footers:{default:new D.Footer({children:[new D.Paragraph({alignment:D.AlignmentType.CENTER,children:[new D.TextRun({text:"CMPC - Unidade Guaíba | ",size:14,color:"888888",font:"Calibri"}),new D.TextRun({children:[D.PageNumber.CURRENT],size:14,color:"888888",font:"Calibri"})]})]})},
+    children:ch
+   }]
+  });
+
+  D.Packer.toBlob(doc).then(function(blob){
+   saveAs(blob,"Engenharia_Sumario Executivo Guaiba_"+mesC+"_"+ano+"_rev"+rev+".docx");
+   btn.disabled=false;btn.textContent='Baixar Word';
+  }).catch(function(err){alert('Erro ao gerar: '+err.message);console.error(err);btn.disabled=false;btn.textContent='Baixar Word'});
+ }catch(err){alert('Erro: '+err.message);console.error(err);btn.disabled=false;btn.textContent='Baixar Word'}
+}
+</script>
 </body>
 </html>
